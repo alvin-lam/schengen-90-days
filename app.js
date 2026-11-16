@@ -115,13 +115,7 @@
     document.getElementById("window-range").textContent =
       formatDate(result.windowStart) + " to " + formatDate(result.windowEnd);
 
-    var statusText = {
-      green: "Well within the limit",
-      yellow: "More than half of the 90 days used",
-      red: "Close to the 90 day limit",
-      black: "Over the 90 day limit"
-    }[status];
-    document.getElementById("status-text").textContent = statusText;
+    document.getElementById("status-text").textContent = C.STATUS_LABELS[status];
     document.getElementById("status-emoji").textContent = {
       green: "\u2705",              // ✅
       yellow: "\u26A0\uFE0F",       // ⚠️
@@ -137,6 +131,10 @@
     var meter = document.getElementById("meter");
     meter.setAttribute("aria-valuenow", String(Math.min(result.total, 90)));
     document.getElementById("meter-fill").style.width = Math.min(result.total / 90, 1) * 100 + "%";
+
+    var hasTrips = trips.length > 0;
+    document.getElementById("export-download").disabled = !hasTrips;
+    document.getElementById("export-copy").disabled = !hasTrips;
 
     document.getElementById("lawyer-warning").hidden = status !== "black";
   }
@@ -177,6 +175,74 @@
   });
 
   referenceInput.addEventListener("change", update);
+
+  // Export the record as CSV, JSON, or plain text.
+  var X = window.SchengenExport;
+  var exportFormat = document.getElementById("export-format");
+  var exportStatus = document.getElementById("export-status");
+  var exportStatusTimer = null;
+
+  function currentExport() {
+    var format = exportFormat.value;
+    var reference = referenceInput.value || C.todayIso();
+    var record = X.buildRecord(trips, reference);
+    return {
+      text: X.FORMATS[format].serialize(record),
+      mime: X.FORMATS[format].mime,
+      name: X.fileName(format, reference),
+      format: format
+    };
+  }
+
+  function showExportStatus(message) {
+    clearTimeout(exportStatusTimer);
+    exportStatus.textContent = message;
+    exportStatus.hidden = false;
+    exportStatusTimer = setTimeout(function () { exportStatus.hidden = true; }, 5000);
+  }
+
+  document.getElementById("export-download").addEventListener("click", function () {
+    if (!trips.length) return;
+    var out = currentExport();
+    // A byte order mark helps Excel read accented and non-Latin country names in CSV files.
+    var body = out.format === "csv" ? "\uFEFF" + out.text : out.text;
+    var url = URL.createObjectURL(new Blob([body], { type: out.mime }));
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = out.name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    showExportStatus("Downloaded " + out.name + ".");
+  });
+
+  document.getElementById("export-copy").addEventListener("click", function () {
+    if (!trips.length) return;
+    var out = currentExport();
+    var label = out.format.toUpperCase();
+    function fallbackCopy() {
+      var area = document.createElement("textarea");
+      area.value = out.text;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      area.remove();
+      showExportStatus(ok ? "Copied " + label + " to the clipboard."
+        : "Copying is blocked in this browser. Use Download instead.");
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(out.text).then(function () {
+        showExportStatus("Copied " + label + " to the clipboard.");
+      }, fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  });
 
   // Keep the copyright year current.
   document.getElementById("copyright-year").textContent = String(new Date().getFullYear());

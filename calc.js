@@ -117,6 +117,13 @@
     return "black";
   }
 
+  var STATUS_LABELS = {
+    green: "Well within the limit",
+    yellow: "More than half of the 90 days used",
+    red: "Close to the 90 day limit",
+    black: "Over the 90 day limit"
+  };
+
   /** Length of a single trip in days (entry and exit inclusive). */
   function tripLength(trip) {
     var entry = toDayNumber(trip.entry);
@@ -135,6 +142,7 @@
     todayIso: todayIso,
     daysInWindow: daysInWindow,
     statusFor: statusFor,
+    STATUS_LABELS: STATUS_LABELS,
     tripLength: tripLength
   };
 

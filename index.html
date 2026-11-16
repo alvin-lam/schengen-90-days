@@ -68,6 +68,28 @@
       </div>
     </section>
 
+    <section class="card" aria-labelledby="export-title">
+      <div class="card-header">
+        <h2 id="export-title">Export your record</h2>
+      </div>
+      <p class="hint export-hint">Save a copy of your trips and totals. The file is created on your device and is not uploaded anywhere.</p>
+      <div class="export-row">
+        <label class="field export-format">
+          <span>Format</span>
+          <select id="export-format">
+            <option value="csv">CSV (spreadsheet)</option>
+            <option value="json">JSON (data)</option>
+            <option value="txt">TXT (plain text)</option>
+          </select>
+        </label>
+        <div class="export-actions">
+          <button type="button" id="export-copy" class="btn btn-ghost">Copy</button>
+          <button type="button" id="export-download" class="btn btn-primary">Download</button>
+        </div>
+      </div>
+      <p id="export-status" class="export-status" role="status" hidden></p>
+    </section>
+
     <footer class="disclaimer">
       <p>Entry and departure days both count as days in the Schengen Area. Overlapping trips are counted once. Trips are saved only in this browser.</p>
       <p>This tool is for general information only and is not legal advice. Official border authorities make the final determination of your permitted stay.</p>
@@ -112,6 +134,7 @@
   </aside>
 
   <script src="calc.js"></script>
+  <script src="export.js"></script>
   <script src="app.js"></script>
   <script src="install.js"></script>
 </body>
