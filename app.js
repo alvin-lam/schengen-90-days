@@ -122,6 +122,12 @@
       black: "Over the 90 day limit"
     }[status];
     document.getElementById("status-text").textContent = statusText;
+    document.getElementById("status-emoji").textContent = {
+      green: "\u2705",              // ✅
+      yellow: "\u26A0\uFE0F",       // ⚠️
+      red: "\u203C\uFE0F",          // ‼️
+      black: "\u26D4\uFE0F"         // ⛔️
+    }[status];
 
     var remaining = 90 - result.total;
     document.getElementById("remaining-text").textContent = remaining >= 0

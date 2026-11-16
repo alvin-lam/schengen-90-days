@@ -111,6 +111,7 @@ h2 { font-size: 1.15rem; margin: 0; }
   font-variant-numeric: tabular-nums;
 }
 .summary-limit { font-size: 1.5rem; font-weight: 600; color: var(--muted); }
+.status-emoji { font-size: 2rem; margin-left: 12px; vertical-align: 0.15em; }
 .status-text { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
 
 .meter {
