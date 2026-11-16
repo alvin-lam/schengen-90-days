@@ -178,5 +178,8 @@
 
   referenceInput.addEventListener("change", update);
 
+  // Keep the copyright year current.
+  document.getElementById("copyright-year").textContent = String(new Date().getFullYear());
+
   renderTrips();
 })();
