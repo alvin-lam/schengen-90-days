@@ -229,7 +229,7 @@ input:focus, select:focus, .btn:focus-visible {
 
 .disclaimer { color: var(--muted); font-size: .85rem; }
 .disclaimer p { margin: 0 0 6px; }
-.footer-icon { display: block; width: 50px; height: 50px; margin: 24px auto 0; }
+.footer-icon { display: block; width: 75px; height: 75px; margin: 24px auto 0; }
 .copyright { margin-top: 8px !important; font-weight: 600; text-align: center; }
 
 @media (max-width: 680px) {
