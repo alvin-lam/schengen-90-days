@@ -79,6 +79,14 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 
+.brand {
+  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: 2.25rem;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  margin: 0 0 6px;
+}
 h1 { font-size: 1.9rem; margin: 0 0 8px; }
 h2 { font-size: 1.15rem; margin: 0; }
 .lede { color: var(--muted); margin: 0 0 24px; }
@@ -234,6 +242,7 @@ input:focus, select:focus, .btn:focus-visible {
 .copyright { margin-top: 1.5em !important; font-weight: 600; text-align: center; }
 
 @media (max-width: 680px) {
+  .brand { font-size: 1.9rem; }
   h1 { font-size: 1.5rem; }
   .summary-total { font-size: 2.8rem; }
   .trip { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
