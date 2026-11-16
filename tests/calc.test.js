@@ -46,3 +46,12 @@ test("invalid or reversed trips count as zero", () => {
 test("29 Schengen countries are listed", () => {
   assert.strictEqual(C.SCHENGEN_COUNTRIES.length, 29);
 });
+
+test("every country has a native name and a flag", () => {
+  C.COUNTRIES.forEach((c) => {
+    assert.ok(c.native, c.name + " native name");
+    // A flag emoji is two regional indicator symbols.
+    assert.match(c.flag, /^[\u{1F1E6}-\u{1F1FF}]{2}$/u, c.name + " flag");
+  });
+  assert.strictEqual(C.countryLabel(C.COUNTRIES.find((c) => c.name === "Germany")), "Germany | Deutschland | 🇩🇪");
+});

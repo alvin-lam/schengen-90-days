@@ -4,7 +4,7 @@ A small static web app that counts how many days a traveler spent in the Schenge
 
 ## Features
 
-- Add any number of trips, each with a Schengen country, an entry date, and a departure date.
+- Add any number of trips, each with a Schengen country, an entry date, and a departure date. The country list shows the English name, the native name, and the flag, for example "Germany | Deutschland | 🇩🇪".
 - Running total of days in the Schengen Area, shown in color:
   - **Green**: 0 to 45 days
   - **Yellow**: 46 to 60 days

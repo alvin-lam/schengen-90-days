@@ -9,14 +9,45 @@
   var MS_PER_DAY = 24 * 60 * 60 * 1000;
   var WINDOW_DAYS = 180;
 
-  // Schengen Area members (29 countries as of 2025).
-  var SCHENGEN_COUNTRIES = [
-    "Austria", "Belgium", "Bulgaria", "Croatia", "Czechia", "Denmark",
-    "Estonia", "Finland", "France", "Germany", "Greece", "Hungary",
-    "Iceland", "Italy", "Latvia", "Liechtenstein", "Lithuania",
-    "Luxembourg", "Malta", "Netherlands", "Norway", "Poland", "Portugal",
-    "Romania", "Slovakia", "Slovenia", "Spain", "Sweden", "Switzerland"
+  // Schengen Area members (29 countries as of 2025), with the name used
+  // in each country's own official language(s) and its flag emoji.
+  var COUNTRIES = [
+    { name: "Austria", native: "Österreich", flag: "🇦🇹" },
+    { name: "Belgium", native: "België / Belgique / Belgien", flag: "🇧🇪" },
+    { name: "Bulgaria", native: "България", flag: "🇧🇬" },
+    { name: "Croatia", native: "Hrvatska", flag: "🇭🇷" },
+    { name: "Czechia", native: "Česko", flag: "🇨🇿" },
+    { name: "Denmark", native: "Danmark", flag: "🇩🇰" },
+    { name: "Estonia", native: "Eesti", flag: "🇪🇪" },
+    { name: "Finland", native: "Suomi", flag: "🇫🇮" },
+    { name: "France", native: "France", flag: "🇫🇷" },
+    { name: "Germany", native: "Deutschland", flag: "🇩🇪" },
+    { name: "Greece", native: "Ελλάδα", flag: "🇬🇷" },
+    { name: "Hungary", native: "Magyarország", flag: "🇭🇺" },
+    { name: "Iceland", native: "Ísland", flag: "🇮🇸" },
+    { name: "Italy", native: "Italia", flag: "🇮🇹" },
+    { name: "Latvia", native: "Latvija", flag: "🇱🇻" },
+    { name: "Liechtenstein", native: "Liechtenstein", flag: "🇱🇮" },
+    { name: "Lithuania", native: "Lietuva", flag: "🇱🇹" },
+    { name: "Luxembourg", native: "Lëtzebuerg", flag: "🇱🇺" },
+    { name: "Malta", native: "Malta", flag: "🇲🇹" },
+    { name: "Netherlands", native: "Nederland", flag: "🇳🇱" },
+    { name: "Norway", native: "Norge", flag: "🇳🇴" },
+    { name: "Poland", native: "Polska", flag: "🇵🇱" },
+    { name: "Portugal", native: "Portugal", flag: "🇵🇹" },
+    { name: "Romania", native: "România", flag: "🇷🇴" },
+    { name: "Slovakia", native: "Slovensko", flag: "🇸🇰" },
+    { name: "Slovenia", native: "Slovenija", flag: "🇸🇮" },
+    { name: "Spain", native: "España", flag: "🇪🇸" },
+    { name: "Sweden", native: "Sverige", flag: "🇸🇪" },
+    { name: "Switzerland", native: "Schweiz / Suisse / Svizzera", flag: "🇨🇭" }
   ];
+  var SCHENGEN_COUNTRIES = COUNTRIES.map(function (c) { return c.name; });
+
+  /** Dropdown label, e.g. "Germany | Deutschland | 🇩🇪". */
+  function countryLabel(country) {
+    return country.name + " | " + country.native + " | " + country.flag;
+  }
 
   /** Convert "YYYY-MM-DD" into an integer day number (days since epoch, UTC). */
   function toDayNumber(isoDate) {
@@ -95,7 +126,9 @@
   }
 
   var api = {
+    COUNTRIES: COUNTRIES,
     SCHENGEN_COUNTRIES: SCHENGEN_COUNTRIES,
+    countryLabel: countryLabel,
     WINDOW_DAYS: WINDOW_DAYS,
     toDayNumber: toDayNumber,
     toIsoDate: toIsoDate,

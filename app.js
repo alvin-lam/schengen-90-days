@@ -35,10 +35,10 @@
     placeholder.value = "";
     placeholder.textContent = "Select a country";
     select.appendChild(placeholder);
-    C.SCHENGEN_COUNTRIES.forEach(function (name) {
+    C.COUNTRIES.forEach(function (country) {
       var opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
+      opt.value = country.name;
+      opt.textContent = C.countryLabel(country);
       select.appendChild(opt);
     });
     select.value = selected || "";
