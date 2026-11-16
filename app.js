@@ -148,59 +148,27 @@
     if (last) last.querySelector(".trip-country").focus();
   });
 
-  /*
-   * Two-step button: the first click asks, a second click within 4 seconds
-   * confirms. Embedded viewers block window.confirm, so this replaces it.
-   */
-  function twoStepButton(button, confirmLabel, canRun, action) {
-    var label = button.textContent;
-    var timer = null;
-    function reset() {
-      clearTimeout(timer);
-      button.classList.remove("confirming");
-      button.textContent = label;
-    }
-    button.addEventListener("click", function () {
-      if (!canRun()) return;
-      if (button.classList.contains("confirming")) {
-        reset();
-        action();
-        return;
-      }
-      button.classList.add("confirming");
-      button.textContent = confirmLabel;
-      timer = setTimeout(reset, 4000);
-    });
+  // Two-step clear: the first click asks, the second click within 4 seconds confirms.
+  var clearBtn = document.getElementById("clear-all");
+  var clearTimer = null;
+  function resetClear() {
+    clearTimeout(clearTimer);
+    clearBtn.classList.remove("confirming");
+    clearBtn.textContent = "Clear all trips";
   }
-
-  twoStepButton(
-    document.getElementById("clear-all"),
-    "Select again to remove all trips",
-    function () { return trips.length > 0; },
-    function () {
+  clearBtn.addEventListener("click", function () {
+    if (!trips.length) return;
+    if (clearBtn.classList.contains("confirming")) {
+      resetClear();
       trips = [];
       saveTrips();
       renderTrips();
+      return;
     }
-  );
-
-  // Wipe everything this page stored in the browser and reset the page.
-  var cacheStatus = document.getElementById("cache-status");
-  twoStepButton(
-    document.getElementById("clear-cache"),
-    "Select again to erase all saved data",
-    function () { return true; },
-    function () {
-      try { localStorage.clear(); } catch (e) { /* storage unavailable */ }
-      try { sessionStorage.clear(); } catch (e) { /* storage unavailable */ }
-      trips = [];
-      referenceInput.value = C.todayIso();
-      renderTrips();
-      cacheStatus.textContent = "Local cache cleared. All saved trips were removed from this browser.";
-      cacheStatus.hidden = false;
-      setTimeout(function () { cacheStatus.hidden = true; }, 6000);
-    }
-  );
+    clearBtn.classList.add("confirming");
+    clearBtn.textContent = "Select again to remove all trips";
+    clearTimer = setTimeout(resetClear, 4000);
+  });
 
   referenceInput.addEventListener("change", update);
 

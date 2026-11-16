@@ -227,14 +227,6 @@ input:focus, select:focus, .btn:focus-visible {
 
 .disclaimer { color: var(--muted); font-size: .85rem; }
 .disclaimer p { margin: 0 0 6px; }
-.cache-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin: 14px 0;
-}
-.cache-status { color: var(--green); font-weight: 600; }
 
 @media (max-width: 680px) {
   h1 { font-size: 1.5rem; }
