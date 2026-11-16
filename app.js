@@ -134,7 +134,6 @@
 
     var hasTrips = trips.length > 0;
     document.getElementById("export-download").disabled = !hasTrips;
-    document.getElementById("export-copy").disabled = !hasTrips;
 
     document.getElementById("lawyer-warning").hidden = status !== "black";
   }
@@ -215,33 +214,6 @@
     link.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
     showExportStatus("Downloaded " + out.name + ".");
-  });
-
-  document.getElementById("export-copy").addEventListener("click", function () {
-    if (!trips.length) return;
-    var out = currentExport();
-    var label = out.format.toUpperCase();
-    function fallbackCopy() {
-      var area = document.createElement("textarea");
-      area.value = out.text;
-      area.setAttribute("readonly", "");
-      area.style.position = "fixed";
-      area.style.opacity = "0";
-      document.body.appendChild(area);
-      area.select();
-      var ok = false;
-      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
-      area.remove();
-      showExportStatus(ok ? "Copied " + label + " to the clipboard."
-        : "Copying is blocked in this browser. Use Download instead.");
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(out.text).then(function () {
-        showExportStatus("Copied " + label + " to the clipboard.");
-      }, fallbackCopy);
-    } else {
-      fallbackCopy();
-    }
   });
 
   // Keep the copyright year current.
