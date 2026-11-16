@@ -12,6 +12,7 @@ A small static web app that counts how many days a traveler spent in the Schenge
 - Entry and departure days both count. Overlapping trips are counted once.
 - Pick a future check date to plan an upcoming trip.
 - Trips are saved in the browser with `localStorage`. Nothing is sent to a server.
+- Installable as a home screen app. Chrome, Edge, and Android show an Install button. iPhone and iPad show the Share > Add to Home Screen steps. The installed app also works offline.
 
 ## Running
 

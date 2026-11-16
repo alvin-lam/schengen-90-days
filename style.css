@@ -61,6 +61,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 body {
   margin: 0;
@@ -235,6 +236,40 @@ input:focus, select:focus, .btn:focus-visible {
   .trip { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   #reference-date { max-width: none; }
 }
+
+/* Add to Home Screen banner */
+.install-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, .12);
+  padding-top: 14px;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.install-icon { width: 48px; height: 48px; border-radius: 11px; flex: none; }
+.install-text { display: flex; flex-direction: column; flex: 1 1 220px; min-width: 0; font-size: .95rem; }
+.install-text span { color: var(--muted); }
+.install-actions { display: flex; gap: 8px; margin-left: auto; }
+.share-glyph {
+  display: inline-block;
+  width: 14px;
+  height: 17px;
+  vertical-align: -2px;
+  background: var(--primary);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 17'%3E%3Cpath d='M7 0l3.5 3.5-1 1L7.7 2.7V11H6.3V2.7L4.5 4.5l-1-1z'/%3E%3Cpath d='M1 6h3.5v1.4H2.4v8.2h9.2V7.4H9.5V6H13v11H1z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 17'%3E%3Cpath d='M7 0l3.5 3.5-1 1L7.7 2.7V11H6.3V2.7L4.5 4.5l-1-1z'/%3E%3Cpath d='M1 6h3.5v1.4H2.4v8.2h9.2V7.4H9.5V6H13v11H1z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+body.has-install-banner { padding-bottom: 140px; }
 
 @media (prefers-reduced-motion: reduce) {
   .summary, .meter-fill { transition: none; }

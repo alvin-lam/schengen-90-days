@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Schengen 90/180 Calculator</title>
   <meta name="description" content="Count the days you spent in the Schengen Area during the last 180 days.">
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0a2ea8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Schengen 90/180">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -84,7 +93,20 @@
     </li>
   </template>
 
+  <aside id="install-banner" class="install-banner" aria-label="Add to Home Screen" hidden>
+    <img src="icons/icon-192.png" alt="" width="48" height="48" class="install-icon">
+    <div class="install-text">
+      <strong>Add to Home Screen</strong>
+      <span id="install-hint">Open the calculator like an app, even when you are offline.</span>
+    </div>
+    <div class="install-actions">
+      <button type="button" id="install-dismiss" class="btn btn-ghost">Not now</button>
+      <button type="button" id="install-accept" class="btn btn-primary" hidden>Install</button>
+    </div>
+  </aside>
+
   <script src="calc.js"></script>
   <script src="app.js"></script>
+  <script src="install.js"></script>
 </body>
 </html>
