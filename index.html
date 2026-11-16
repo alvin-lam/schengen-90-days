@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Schengen 90/180 Calculator</title>
+  <meta name="description" content="Count the days you spent in the Schengen Area during the last 180 days.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <h1>Schengen 90/180 Calculator</h1>
+      <p class="lede">Add each trip to the Schengen Area. The calculator counts every day you were present during the 180 days that end on the check date.</p>
+    </header>
+
+    <section id="summary" class="summary status-green" aria-live="polite">
+      <div class="summary-main">
+        <span class="summary-label">Days in the Schengen Area</span>
+        <span class="summary-total"><span id="total-days">0</span><span class="summary-limit"> / 90</span></span>
+        <span id="status-text" class="status-text">Within the limit</span>
+      </div>
+      <div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="90" aria-valuenow="0" id="meter">
+        <div class="meter-fill" id="meter-fill"></div>
+      </div>
+      <p class="summary-window">Window: <span id="window-range"></span></p>
+      <p class="summary-remaining" id="remaining-text"></p>
+    </section>
+
+    <section id="lawyer-warning" class="warning" hidden role="alert">
+      <h2>Possible overstay</h2>
+      <p>Your recorded stays exceed 90 days within a 180 day period. Overstaying in the Schengen Area can lead to fines, deportation, and entry bans. Please contact a local immigration lawyer who is familiar with Schengen overstay laws before you travel again or take any other action.</p>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Check date</h2>
+      </div>
+      <label class="field">
+        <span>Count the 180 days ending on</span>
+        <input type="date" id="reference-date">
+      </label>
+      <p class="hint">Defaults to today. Pick a future date to plan an upcoming trip.</p>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Trips</h2>
+        <button type="button" id="add-trip" class="btn btn-primary">Add trip</button>
+      </div>
+      <div class="trip-head" aria-hidden="true">
+        <span>Country</span><span>Entry date</span><span>Departure date</span><span>Days counted</span><span></span>
+      </div>
+      <ol id="trip-list" class="trip-list"></ol>
+      <p id="empty-state" class="empty">No trips yet. Select "Add trip" to begin.</p>
+      <div class="card-footer">
+        <button type="button" id="clear-all" class="btn btn-ghost">Clear all trips</button>
+      </div>
+    </section>
+
+    <footer class="disclaimer">
+      <p>Entry and departure days both count as days in the Schengen Area. Overlapping trips are counted once. Trips are saved only in this browser.</p>
+      <p>This tool is for general information only and is not legal advice. Official border authorities make the final determination of your permitted stay.</p>
+    </footer>
+  </main>
+
+  <template id="trip-template">
+    <li class="trip">
+      <label class="field">
+        <span class="field-label">Country</span>
+        <select class="trip-country" required></select>
+      </label>
+      <label class="field">
+        <span class="field-label">Entry date</span>
+        <input type="date" class="trip-entry" required>
+      </label>
+      <label class="field">
+        <span class="field-label">Departure date</span>
+        <input type="date" class="trip-exit" required>
+      </label>
+      <div class="trip-days">
+        <span class="field-label">Days counted</span>
+        <span class="trip-days-value">0</span>
+      </div>
+      <button type="button" class="btn btn-remove" aria-label="Remove trip">Remove</button>
+      <p class="trip-error" hidden>Departure date must be on or after the entry date.</p>
+    </li>
+  </template>
+
+  <script src="calc.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
