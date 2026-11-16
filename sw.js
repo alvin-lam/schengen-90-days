@@ -3,7 +3,7 @@
  * Network first, so visitors always get the latest version when online;
  * the cached copy is used only when the network is unavailable.
  */
-var CACHE = "schengen-90-180-v4";
+var CACHE = "schengen-90-180-v5";
 var SHELL = [
   "./",
   "index.html",
@@ -14,6 +14,7 @@ var SHELL = [
   "manifest.webmanifest",
   "favicon.ico",
   "icons/favicon-32.png",
+  "icons/icon-100.png",
   "icons/icon-192.png",
   "icons/apple-touch-icon.png"
 ];
