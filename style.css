@@ -17,7 +17,25 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+      --bg: #12151b;
+      --surface: #1b2029;
+      --text: #e8ebf0;
+      --muted: #9aa3b2;
+      --border: #2c3340;
+      --primary: #5b84f5;
+      --green: #4cc982;
+      --green-bg: #15301f;
+      --yellow: #f2c84b;
+      --yellow-bg: #3a3011;
+      --yellow-bar: #f2c84b;
+      --red: #f27378;
+      --red-bg: #3d1a1c;
+      color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
     --bg: #12151b;
     --surface: #1b2029;
     --text: #e8ebf0;
@@ -31,7 +49,7 @@
     --yellow-bar: #f2c84b;
     --red: #f27378;
     --red-bg: #3d1a1c;
-  }
+    color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -47,7 +65,9 @@ body {
 .container {
   max-width: 880px;
   margin: 0 auto;
-  padding: 32px 16px 48px;
+  padding-block: 32px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 
 h1 { font-size: 1.9rem; margin: 0 0 8px; }
@@ -155,6 +175,7 @@ input:focus, select:focus, .btn:focus-visible {
 }
 .btn-primary { background: var(--primary); color: var(--primary-text); }
 .btn-ghost { background: transparent; color: var(--muted); border-color: var(--border); }
+.btn-ghost.confirming { color: var(--red); border-color: var(--red); }
 .btn-remove { background: transparent; color: var(--red); border-color: var(--border); }
 
 /* Trips */
@@ -197,4 +218,8 @@ input:focus, select:focus, .btn:focus-visible {
   .trip-days { flex-direction: column; align-items: flex-start; justify-content: center; }
   .trip-days .field-label { font-weight: 400; }
   #reference-date { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary, .meter-fill { transition: none; }
 }

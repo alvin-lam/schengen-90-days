@@ -147,13 +147,26 @@
     if (last) last.querySelector(".trip-country").focus();
   });
 
-  document.getElementById("clear-all").addEventListener("click", function () {
+  // Two-step clear: the first click asks, the second click within 4 seconds confirms.
+  var clearBtn = document.getElementById("clear-all");
+  var clearTimer = null;
+  function resetClear() {
+    clearTimeout(clearTimer);
+    clearBtn.classList.remove("confirming");
+    clearBtn.textContent = "Clear all trips";
+  }
+  clearBtn.addEventListener("click", function () {
     if (!trips.length) return;
-    if (window.confirm("Remove all trips?")) {
+    if (clearBtn.classList.contains("confirming")) {
+      resetClear();
       trips = [];
       saveTrips();
       renderTrips();
+      return;
     }
+    clearBtn.classList.add("confirming");
+    clearBtn.textContent = "Select again to remove all trips";
+    clearTimer = setTimeout(resetClear, 4000);
   });
 
   referenceInput.addEventListener("change", update);
