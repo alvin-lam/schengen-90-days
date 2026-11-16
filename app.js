@@ -116,9 +116,10 @@
       formatDate(result.windowStart) + " to " + formatDate(result.windowEnd);
 
     var statusText = {
-      green: "Within the limit",
-      yellow: "Approaching the 90 day limit",
-      red: "Over the 90 day limit"
+      green: "Well within the limit",
+      yellow: "More than half of the 90 days used",
+      red: "Close to the 90 day limit",
+      black: "Over the 90 day limit"
     }[status];
     document.getElementById("status-text").textContent = statusText;
 
@@ -131,7 +132,7 @@
     meter.setAttribute("aria-valuenow", String(Math.min(result.total, 90)));
     document.getElementById("meter-fill").style.width = Math.min(result.total / 90, 1) * 100 + "%";
 
-    document.getElementById("lawyer-warning").hidden = status !== "red";
+    document.getElementById("lawyer-warning").hidden = status !== "black";
   }
 
   function formatDate(iso) {

@@ -29,10 +29,13 @@ test("overlapping trips are not double counted", () => {
 
 test("status thresholds", () => {
   assert.strictEqual(C.statusFor(0), "green");
-  assert.strictEqual(C.statusFor(80), "green");
-  assert.strictEqual(C.statusFor(81), "yellow");
-  assert.strictEqual(C.statusFor(90), "yellow");
-  assert.strictEqual(C.statusFor(91), "red");
+  assert.strictEqual(C.statusFor(45), "green");
+  assert.strictEqual(C.statusFor(46), "yellow");
+  assert.strictEqual(C.statusFor(60), "yellow");
+  assert.strictEqual(C.statusFor(61), "red");
+  assert.strictEqual(C.statusFor(90), "red");
+  assert.strictEqual(C.statusFor(91), "black");
+  assert.strictEqual(C.statusFor(200), "black");
 });
 
 test("invalid or reversed trips count as zero", () => {

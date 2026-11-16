@@ -80,9 +80,10 @@
 
   /** Map a day total to a status level. */
   function statusFor(total) {
-    if (total <= 80) return "green";
-    if (total <= 90) return "yellow";
-    return "red";
+    if (total <= 45) return "green";
+    if (total <= 60) return "yellow";
+    if (total <= 90) return "red";
+    return "black";
   }
 
   /** Length of a single trip in days (entry and exit inclusive). */
