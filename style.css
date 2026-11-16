@@ -154,7 +154,13 @@ h2 { font-size: 1.15rem; margin: 0; }
   gap: 12px;
   margin-bottom: 14px;
 }
-.card-footer { margin-top: 12px; text-align: right; }
+.card-footer {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
 .hint { color: var(--muted); font-size: .9rem; margin: 8px 0 0; }
 
 .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
