@@ -11,6 +11,7 @@ A small static web app that counts how many days a traveler spent in the Schenge
   - **Black** ⛔️: 91 days or more, with a notice to contact a local immigration lawyer who knows Schengen overstay laws
 - Entry and departure days both count. Overlapping trips are counted once.
 - Pick a future check date to plan an upcoming trip.
+- Switch between light and dark mode with the button in the upper right corner. The page follows the device setting until a visitor picks one.
 - Export your record as CSV (spreadsheet), JSON (data), or TXT (plain text). The file is created in the browser and never uploaded.
 - Trips are saved in the browser with `localStorage`. Nothing is sent to a server.
 - Installable as a home screen app. Chrome, Edge, and Android show an Install button. iPhone and iPad show the Share > Add to Home Screen steps. The installed app also works offline.

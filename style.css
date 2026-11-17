@@ -72,6 +72,7 @@ body {
 }
 
 .container {
+  position: relative;
   max-width: 880px;
   margin: 0 auto;
   padding-block: 32px 48px;
@@ -103,6 +104,36 @@ body {
 h1 { font-size: 1.5rem; margin: 0 0 8px; } /* 24px at the default text size, on all screens */
 h2 { font-size: 1.15rem; margin: 0; }
 .lede { color: var(--muted); margin: 0 0 24px; }
+
+/* Light and dark mode button, upper right corner */
+.theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.theme-toggle:hover { border-color: var(--muted); }
+.theme-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.theme-toggle svg { fill: currentColor; stroke: currentColor; }
+.theme-toggle .icon-moon { stroke: none; }
+/* Show the moon in light mode (tap for dark) and the sun in dark mode (tap for light). */
+.theme-toggle .icon-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: block; }
+  :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
+}
 
 /* Summary */
 .summary {
@@ -277,6 +308,8 @@ input:focus, select:focus, .btn:focus-visible {
 }
 
 @media (max-width: 680px) {
+  .container { padding-top: 68px; }
+  .theme-toggle { top: 14px; }
   .brand { font-size: 2.375rem; } /* 25% larger than 1.9rem */
   .summary-total { font-size: 2.8rem; }
   .trip { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
