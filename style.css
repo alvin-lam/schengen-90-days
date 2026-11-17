@@ -272,7 +272,7 @@ input:focus, select:focus, .btn:focus-visible {
      at regular weight and a little larger than the rest of the footer. */
   font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
   font-weight: 400;
-  font-size: 1.15rem;
+  font-size: 1.125rem; /* 18px at the default text size */
   letter-spacing: 0.01em;
 }
 
