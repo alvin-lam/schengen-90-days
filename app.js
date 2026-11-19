@@ -149,9 +149,9 @@
       el.classList.toggle("visited", !!chosen[el.getAttribute("data-country")]);
     });
     var names = C.SCHENGEN_COUNTRIES.filter(function (n) { return chosen[n]; });
-    document.getElementById("map-summary").textContent = names.length
-      ? "In your trips (" + names.length + "): " + names.join(", ")
-      : "Choose a country in a trip to shade it on the map.";
+    var summary = document.getElementById("map-summary");
+    summary.textContent = names.length ? "In your trips (" + names.length + "): " + names.join(", ") : "";
+    summary.hidden = !names.length;
   }
 
   function formatDate(iso) {
