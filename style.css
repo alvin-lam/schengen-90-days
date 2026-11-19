@@ -85,7 +85,7 @@ body {
 
 .container {
   position: relative;
-  max-width: 880px;
+  max-width: 1040px;
   margin: 0 auto;
   padding-block: 32px 48px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -387,6 +387,57 @@ input:focus, select:focus, .btn:focus-visible {
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 17'%3E%3Cpath d='M7 0l3.5 3.5-1 1L7.7 2.7V11H6.3V2.7L4.5 4.5l-1-1z'/%3E%3Cpath d='M1 6h3.5v1.4H2.4v8.2h9.2V7.4H9.5V6H13v11H1z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 body.has-install-banner { padding-bottom: 140px; }
+
+/* Overview and map groups: one column by default */
+.overview > * { margin-bottom: 16px; }
+.map-side { display: flex; flex-direction: column; }
+
+/* Wide screens: summary beside the check date, map beside its controls. */
+@media (min-width: 1000px) {
+  .overview {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: stretch;
+  }
+  .overview > * { margin-bottom: 0; }
+  .overview .summary { grid-column: 1; grid-row: 1; }
+  .overview .check-card { grid-column: 2; grid-row: 1; }
+  /* The warning takes its own full-width row only when it is showing. */
+  .overview .warning { grid-column: 1 / -1; grid-row: 2; }
+  .check-card #reference-date { max-width: none; }
+  .map-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+  .map-layout .map-wrap { margin: 0; }
+  .map-side .map-legend { flex-direction: column; align-items: flex-start; justify-content: flex-start; margin-top: 4px; }
+  .map-side .map-summary { text-align: left; }
+  .map-side .map-download-row { flex-direction: column; align-items: stretch; }
+  .map-side .export-format { max-width: none; flex-basis: auto; }
+  .map-side .export-actions { margin-left: 0; }
+  .map-side .export-actions .btn { width: 100%; }
+}
+
+/* Phones: tighter cards, bigger footer text, full-width action buttons. */
+@media (max-width: 600px) {
+  .card { padding: 16px; }
+  .summary { padding: 18px; }
+  .disclaimer { font-size: .9rem; }
+  .export-actions { width: 100%; }
+  .export-actions .btn { flex: 1; }
+  .card-footer .btn { flex: 1; }
+}
+
+/* Very small phones: stack the two date fields so full dates stay visible. */
+@media (max-width: 360px) {
+  .trip { grid-template-columns: minmax(0, 1fr); }
+  .trip-days { flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 8px; min-height: 0; }
+  .card-footer .btn { flex-basis: 100%; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .summary, .meter-fill, .map-country { transition: none; }
