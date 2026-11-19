@@ -17,6 +17,7 @@
   --black-text: #ffffff;
   --black-muted: #c3c9d3;
   --black-edge: #0e1014;
+  --brand-link: #1F5FD1;
   --map-visited: #003399; /* Europe blue, from the EU flag */
   --map-member: #cfd5dd;
   --map-other: #f6f7f9;
@@ -41,6 +42,7 @@
       --red-bg: #3d1a1c;
       --black-panel: #000000;
       --black-edge: #e8ebf0;
+      --brand-link: #7A9CEB;
       --map-visited: #3d6cf0;
       --map-member: #3f4756;
       --map-other: #2a303a;
@@ -65,6 +67,7 @@
     --red-bg: #3d1a1c;
     --black-panel: #000000;
     --black-edge: #e8ebf0;
+    --brand-link: #7A9CEB;
     --map-visited: #3d6cf0;
     --map-member: #3f4756;
     --map-other: #2a303a;
@@ -101,10 +104,10 @@ body {
   margin: 0 0 6px;
 }
 .brand, .page-header h1 { text-align: center; text-wrap: balance; }
-/* Brand links share one quiet style: text color, no underline. */
+/* Brand links share one style: brand blue, no underline. */
 .brand a,
 .copyright a {
-  color: inherit;
+  color: var(--brand-link);
   text-decoration: none;
   border-radius: 4px;
 }
