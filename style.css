@@ -87,7 +87,7 @@ body {
   position: relative;
   max-width: 1040px;
   margin: 0 auto;
-  padding-block: 32px 48px;
+  padding-block: 32px 96px; /* bottom room so the back to top button never covers the footer */
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
@@ -354,6 +354,30 @@ input:focus, select:focus, .btn:focus-visible {
   .export-format { max-width: none; flex-basis: 100%; }
 }
 
+/* Back to top button, lower right corner */
+.back-to-top {
+  position: fixed;
+  right: max(20px, calc(env(safe-area-inset-right, 0px) + 16px));
+  bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px));
+  z-index: 15;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-text);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+  cursor: pointer;
+}
+.back-to-top:hover { filter: brightness(1.08); }
+.back-to-top:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+/* Sit above the Add to Home Screen banner when it is showing. */
+body.has-install-banner .back-to-top { bottom: calc(var(--install-banner-height, 150px) + 16px); }
+#page-title:focus { outline: none; }
+
 /* Add to Home Screen banner */
 .install-banner {
   position: fixed;
@@ -386,7 +410,7 @@ input:focus, select:focus, .btn:focus-visible {
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 17'%3E%3Cpath d='M7 0l3.5 3.5-1 1L7.7 2.7V11H6.3V2.7L4.5 4.5l-1-1z'/%3E%3Cpath d='M1 6h3.5v1.4H2.4v8.2h9.2V7.4H9.5V6H13v11H1z'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 17'%3E%3Cpath d='M7 0l3.5 3.5-1 1L7.7 2.7V11H6.3V2.7L4.5 4.5l-1-1z'/%3E%3Cpath d='M1 6h3.5v1.4H2.4v8.2h9.2V7.4H9.5V6H13v11H1z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
-body.has-install-banner { padding-bottom: 140px; }
+body.has-install-banner { padding-bottom: var(--install-banner-height, 140px); }
 
 /* Overview and map groups: one column by default */
 .overview > * { margin-bottom: 16px; }

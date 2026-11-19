@@ -316,6 +316,20 @@
     img.src = url;
   });
 
+  // Back to top: appears after scrolling down, returns to the top of the page.
+  var topButton = document.getElementById("back-to-top");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function toggleTopButton() {
+    topButton.hidden = window.scrollY < 400;
+  }
+  window.addEventListener("scroll", toggleTopButton, { passive: true });
+  toggleTopButton();
+  topButton.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+    // Move keyboard focus to the title so the next Tab starts from the top.
+    document.getElementById("page-title").focus({ preventScroll: true });
+  });
+
   // Keep the copyright year current.
   document.getElementById("copyright-year").textContent = String(new Date().getFullYear());
 

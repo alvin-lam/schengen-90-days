@@ -28,7 +28,7 @@
     </button>
     <header class="page-header">
       <p class="brand"><a href="https://alltripsconsidered.com" target="_blank" rel="noopener">All Trips Considered</a></p>
-      <h1>Schengen 90/180 Calculator 🇪🇺</h1>
+      <h1 id="page-title" tabindex="-1">Schengen 90/180 Calculator 🇪🇺</h1>
       <p class="lede">Add each trip to the Schengen Area. The calculator counts every day you were present during the 180 days that end on the check date.</p>
     </header>
 
@@ -143,6 +143,10 @@
       <p class="copyright">© <span id="copyright-year">2026</span> <a href="https://alltripsconsidered.com">AllTripsConsidered.com</a>. All rights reserved.</p>
     </footer>
   </main>
+
+  <button type="button" id="back-to-top" class="back-to-top" aria-label="Back to top" title="Back to top" hidden>
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
 
   <template id="trip-template">
     <li class="trip">

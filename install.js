@@ -42,15 +42,23 @@
     }
   }
 
+  // Share the banner's height so the back to top button can sit just above it.
+  function syncBannerHeight() {
+    document.documentElement.style.setProperty("--install-banner-height", banner.hidden ? "0px" : banner.offsetHeight + "px");
+  }
+  window.addEventListener("resize", syncBannerHeight);
+
   function show() {
     if (isStandalone() || recentlyDismissed()) return;
     banner.hidden = false;
     document.body.classList.add("has-install-banner");
+    syncBannerHeight();
   }
 
   function hide() {
     banner.hidden = true;
     document.body.classList.remove("has-install-banner");
+    syncBannerHeight();
   }
 
   dismissBtn.addEventListener("click", function () {
