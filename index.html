@@ -93,6 +93,20 @@
         <li><span class="swatch swatch-other"></span>Outside the Schengen Area</li>
       </ul>
       <p id="map-summary" class="map-summary" aria-live="polite" hidden></p>
+      <div class="export-row map-download-row">
+        <label class="field export-format">
+          <span>Download the map as</span>
+          <select id="map-format">
+            <option value="png">PNG (image)</option>
+            <option value="jpg">JPG (photo)</option>
+            <option value="svg">SVG (scalable)</option>
+          </select>
+        </label>
+        <div class="export-actions">
+          <button type="button" id="map-download" class="btn btn-primary">Download map</button>
+        </div>
+      </div>
+      <p id="map-status" class="export-status" role="status" hidden></p>
     </section>
 
     <section class="card" aria-labelledby="export-title">

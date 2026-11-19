@@ -295,7 +295,7 @@ input:focus, select:focus, .btn:focus-visible {
 .map-context path { fill: var(--map-other); }
 .map-country { fill: var(--map-member); transition: fill .3s ease; }
 .map-country.visited { fill: var(--map-visited); }
-.map-dot { stroke-width: 1.5; }
+.europe-map .map-dot { stroke-width: 1.5; }
 .swatch-sea { background: var(--map-sea); }
 .map-legend {
   list-style: none;
@@ -314,6 +314,7 @@ input:focus, select:focus, .btn:focus-visible {
 .swatch-member { background: var(--map-member); }
 .swatch-other { background: var(--map-other); }
 .map-summary { margin: 10px 0 0; text-align: center; font-size: .9rem; color: var(--text); }
+.map-download-row { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
 
 /* Export */
 .export-hint { margin: 0 0 14px; }

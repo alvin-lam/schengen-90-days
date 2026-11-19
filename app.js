@@ -221,15 +221,99 @@
     var out = currentExport();
     // A byte order mark helps Excel read accented and non-Latin country names in CSV files.
     var body = out.format === "csv" ? "\uFEFF" + out.text : out.text;
-    var url = URL.createObjectURL(new Blob([body], { type: out.mime }));
+    downloadBlob(new Blob([body], { type: out.mime }), out.name);
+    showExportStatus("Downloaded " + out.name + ".");
+  });
+
+  function downloadBlob(blob, name) {
+    var url = URL.createObjectURL(blob);
     var link = document.createElement("a");
     link.href = url;
-    link.download = out.name;
+    link.download = name;
     document.body.appendChild(link);
     link.click();
     link.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    showExportStatus("Downloaded " + out.name + ".");
+  }
+
+  // Download the map as SVG, PNG, or JPG, in the colors currently on screen.
+  var mapFormat = document.getElementById("map-format");
+  var mapStatus = document.getElementById("map-status");
+  var mapStatusTimer = null;
+  var MAP_SCALE = 2; // PNG and JPG are drawn at twice the map size (1600 px wide) for sharp prints
+
+  function showMapStatus(message) {
+    clearTimeout(mapStatusTimer);
+    mapStatus.textContent = message;
+    mapStatus.hidden = false;
+    mapStatusTimer = setTimeout(function () { mapStatus.hidden = true; }, 5000);
+  }
+
+  // A standalone copy of the map: colors are written onto each shape, because
+  // the page's stylesheet does not travel with the file. Colors come from the
+  // theme tokens, not the shapes on screen, so a fade in progress is never captured.
+  function standaloneMapSvg() {
+    var source = document.getElementById("europe-map");
+    var box = source.viewBox.baseVal;
+    var tokens = getComputedStyle(document.documentElement);
+    function token(name) { return tokens.getPropertyValue(name).trim(); }
+    var colors = { visited: token("--map-visited"), member: token("--map-member"), other: token("--map-other"), sea: token("--map-sea") };
+    var copy = source.cloneNode(true);
+    Array.prototype.forEach.call(copy.querySelectorAll("path, circle"), function (el) {
+      var cls = el.getAttribute("class") || "";
+      var isMember = cls.indexOf("map-country") !== -1;
+      el.setAttribute("fill", !isMember ? colors.other : cls.indexOf("visited") !== -1 ? colors.visited : colors.member);
+      el.setAttribute("stroke", colors.sea);
+      el.setAttribute("stroke-width", cls.indexOf("map-dot") !== -1 ? "1.5" : "0.8");
+      el.setAttribute("stroke-linejoin", "round");
+      el.removeAttribute("class");
+    });
+    Array.prototype.forEach.call(copy.querySelectorAll("g"), function (g) { g.removeAttribute("class"); });
+    copy.removeAttribute("id");
+    copy.removeAttribute("class");
+    copy.removeAttribute("role");
+    copy.removeAttribute("aria-labelledby");
+    copy.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    copy.setAttribute("width", String(box.width));
+    copy.setAttribute("height", String(box.height));
+    var sea = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    sea.setAttribute("width", String(box.width));
+    sea.setAttribute("height", String(box.height));
+    sea.setAttribute("fill", colors.sea);
+    copy.insertBefore(sea, copy.querySelector("g"));
+    return { text: new XMLSerializer().serializeToString(copy), width: box.width, height: box.height };
+  }
+
+  document.getElementById("map-download").addEventListener("click", function () {
+    var format = mapFormat.value;
+    var svg = standaloneMapSvg();
+    var name = "schengen-map-" + (referenceInput.value || C.todayIso()) + "." + format;
+    var svgBlob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + svg.text], { type: "image/svg+xml" });
+    if (format === "svg") {
+      downloadBlob(svgBlob, name);
+      showMapStatus("Downloaded " + name + ".");
+      return;
+    }
+    var url = URL.createObjectURL(svgBlob);
+    var img = new Image();
+    img.onload = function () {
+      var canvas = document.createElement("canvas");
+      canvas.width = svg.width * MAP_SCALE;
+      canvas.height = svg.height * MAP_SCALE;
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      var type = format === "jpg" ? "image/jpeg" : "image/png";
+      canvas.toBlob(function (blob) {
+        if (!blob) { showMapStatus("This browser could not create the image. Try SVG instead."); return; }
+        downloadBlob(blob, name);
+        showMapStatus("Downloaded " + name + ".");
+      }, type, 0.92);
+    };
+    img.onerror = function () {
+      URL.revokeObjectURL(url);
+      showMapStatus("This browser could not create the image. Try SVG instead.");
+    };
+    img.src = url;
   });
 
   // Keep the copyright year current.
