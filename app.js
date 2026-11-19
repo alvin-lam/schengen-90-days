@@ -60,6 +60,7 @@
       country.addEventListener("change", function () {
         trips[index].country = country.value;
         saveTrips();
+        update();
       });
       entry.addEventListener("change", function () {
         trips[index].entry = entry.value;
@@ -132,10 +133,25 @@
     meter.setAttribute("aria-valuenow", String(Math.min(result.total, 90)));
     document.getElementById("meter-fill").style.width = Math.min(result.total / 90, 1) * 100 + "%";
 
+    updateMap();
+
     var hasTrips = trips.length > 0;
     document.getElementById("export-download").disabled = !hasTrips;
 
     document.getElementById("lawyer-warning").hidden = status !== "black";
+  }
+
+  // Shade every country that appears in a trip, in the same order as the country list.
+  function updateMap() {
+    var chosen = {};
+    trips.forEach(function (t) { if (t.country) chosen[t.country] = true; });
+    Array.prototype.forEach.call(document.querySelectorAll("#europe-map .map-country"), function (el) {
+      el.classList.toggle("visited", !!chosen[el.getAttribute("data-country")]);
+    });
+    var names = C.SCHENGEN_COUNTRIES.filter(function (n) { return chosen[n]; });
+    document.getElementById("map-summary").textContent = names.length
+      ? "In your trips (" + names.length + "): " + names.join(", ")
+      : "Choose a country in a trip to shade it on the map.";
   }
 
   function formatDate(iso) {

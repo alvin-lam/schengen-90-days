@@ -96,3 +96,10 @@ test("TXT lists the totals and each trip", () => {
 test("file names use the check date", () => {
   assert.strictEqual(X.fileName("csv", "2026-11-16"), "schengen-trips-2026-11-16.csv");
 });
+
+test("the map has a shape for every Schengen country", () => {
+  const html = require("fs").readFileSync(require("path").join(__dirname, "..", "index.html"), "utf8");
+  const onMap = new Set([...html.matchAll(/class="map-country[^"]*" data-country="([^"]+)"/g)].map((m) => m[1]));
+  const missing = C.SCHENGEN_COUNTRIES.filter((c) => !onMap.has(c));
+  assert.deepStrictEqual(missing, []);
+});
