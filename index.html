@@ -98,16 +98,13 @@
       </ul>
       <p id="map-summary" class="map-summary" aria-live="polite" hidden></p>
       <div class="export-row map-download-row">
-        <label class="field export-format">
-          <span>Download the map as</span>
-          <select id="map-format">
-            <option value="png">PNG (image)</option>
-            <option value="jpg">JPG (photo)</option>
-            <option value="svg">SVG (scalable)</option>
-          </select>
-        </label>
-        <div class="export-actions">
-          <button type="button" id="map-download" class="btn btn-primary">Download map</button>
+        <div class="menu-wrap">
+          <button type="button" id="map-download" class="btn btn-primary menu-button" aria-haspopup="menu" aria-expanded="false" aria-controls="map-menu">Download map <svg class="menu-chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div id="map-menu" class="format-menu" role="menu" aria-labelledby="map-download" hidden>
+            <button type="button" role="menuitem" data-format="png"><strong>PNG</strong><span>Image for sharing</span></button>
+            <button type="button" role="menuitem" data-format="jpg"><strong>JPG</strong><span>Smaller photo file</span></button>
+            <button type="button" role="menuitem" data-format="svg"><strong>SVG</strong><span>Sharp at any size</span></button>
+          </div>
         </div>
       </div>
       <p id="map-status" class="export-status" role="status" hidden></p>
@@ -121,16 +118,13 @@
       </div>
       <p class="hint export-hint">Download your trips and totals. The file is created on your device and is not uploaded anywhere.</p>
       <div class="export-row">
-        <label class="field export-format">
-          <span>Format</span>
-          <select id="export-format">
-            <option value="csv">CSV (spreadsheet)</option>
-            <option value="json">JSON (data)</option>
-            <option value="txt">TXT (plain text)</option>
-          </select>
-        </label>
-        <div class="export-actions">
-          <button type="button" id="export-download" class="btn btn-primary">Download</button>
+        <div class="menu-wrap">
+          <button type="button" id="export-download" class="btn btn-primary menu-button" aria-haspopup="menu" aria-expanded="false" aria-controls="export-menu">Download <svg class="menu-chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div id="export-menu" class="format-menu" role="menu" aria-labelledby="export-download" hidden>
+            <button type="button" role="menuitem" data-format="csv"><strong>CSV</strong><span>Spreadsheet</span></button>
+            <button type="button" role="menuitem" data-format="json"><strong>JSON</strong><span>Data with totals</span></button>
+            <button type="button" role="menuitem" data-format="txt"><strong>TXT</strong><span>Plain text report</span></button>
+          </div>
         </div>
       </div>
       <p id="export-status" class="export-status" role="status" hidden></p>

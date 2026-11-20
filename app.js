@@ -193,12 +193,10 @@
 
   // Export the record as CSV, JSON, or plain text.
   var X = window.SchengenExport;
-  var exportFormat = document.getElementById("export-format");
   var exportStatus = document.getElementById("export-status");
   var exportStatusTimer = null;
 
-  function currentExport() {
-    var format = exportFormat.value;
+  function currentExport(format) {
     var reference = referenceInput.value || C.todayIso();
     var record = X.buildRecord(trips, reference);
     return {
@@ -216,9 +214,73 @@
     exportStatusTimer = setTimeout(function () { exportStatus.hidden = true; }, 5000);
   }
 
-  document.getElementById("export-download").addEventListener("click", function () {
+  /*
+   * A button that opens a short list of file formats. Picking one runs
+   * onChoose(format) and closes the list. Works with mouse, touch, and keyboard
+   * (arrow keys move between formats, Escape closes).
+   */
+  var openMenu = null;
+  function setupFormatMenu(buttonId, menuId, onChoose) {
+    var button = document.getElementById(buttonId);
+    var list = document.getElementById(menuId);
+    var items = Array.prototype.slice.call(list.querySelectorAll('[role="menuitem"]'));
+    var wrap = button.parentNode;
+
+    function close(returnFocus) {
+      list.hidden = true;
+      wrap.classList.remove("open-up");
+      button.setAttribute("aria-expanded", "false");
+      if (openMenu && openMenu.list === list) openMenu = null;
+      if (returnFocus) button.focus();
+    }
+    function open(focusIndex) {
+      if (openMenu) openMenu.close(false);
+      list.hidden = false;
+      button.setAttribute("aria-expanded", "true");
+      // Open upward when there is not enough room below the button.
+      var rect = list.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 8 && button.getBoundingClientRect().top > rect.height + 8) {
+        wrap.classList.add("open-up");
+      }
+      openMenu = { list: list, close: close, wrap: wrap };
+      items[focusIndex || 0].focus();
+    }
+
+    button.addEventListener("click", function () {
+      if (button.disabled) return;
+      if (list.hidden) open(0); else close(true);
+    });
+    button.addEventListener("keydown", function (e) {
+      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !button.disabled) {
+        e.preventDefault();
+        open(e.key === "ArrowUp" ? items.length - 1 : 0);
+      }
+    });
+    items.forEach(function (item, i) {
+      item.addEventListener("click", function () {
+        close(true);
+        onChoose(item.getAttribute("data-format"));
+      });
+      item.addEventListener("keydown", function (e) {
+        var next = null;
+        if (e.key === "ArrowDown") next = (i + 1) % items.length;
+        else if (e.key === "ArrowUp") next = (i - 1 + items.length) % items.length;
+        else if (e.key === "Home") next = 0;
+        else if (e.key === "End") next = items.length - 1;
+        else if (e.key === "Escape") { e.preventDefault(); close(true); return; }
+        else if (e.key === "Tab") { close(false); return; }
+        if (next !== null) { e.preventDefault(); items[next].focus(); }
+      });
+    });
+  }
+  // Close an open menu when the visitor clicks or taps anywhere else.
+  document.addEventListener("click", function (e) {
+    if (openMenu && !openMenu.wrap.contains(e.target)) openMenu.close(false);
+  });
+
+  setupFormatMenu("export-download", "export-menu", function (format) {
     if (!trips.length) return;
-    var out = currentExport();
+    var out = currentExport(format);
     // A byte order mark helps Excel read accented and non-Latin country names in CSV files.
     var body = out.format === "csv" ? "\uFEFF" + out.text : out.text;
     downloadBlob(new Blob([body], { type: out.mime }), out.name);
@@ -237,7 +299,6 @@
   }
 
   // Download the map as SVG, PNG, or JPG, in the colors currently on screen.
-  var mapFormat = document.getElementById("map-format");
   var mapStatus = document.getElementById("map-status");
   var mapStatusTimer = null;
   var MAP_SCALE = 2; // PNG and JPG are drawn at twice the map size (1600 px wide) for sharp prints
@@ -284,8 +345,7 @@
     return { text: new XMLSerializer().serializeToString(copy), width: box.width, height: box.height };
   }
 
-  document.getElementById("map-download").addEventListener("click", function () {
-    var format = mapFormat.value;
+  setupFormatMenu("map-download", "map-menu", function (format) {
     var svg = standaloneMapSvg();
     var name = "schengen-map-" + (referenceInput.value || C.todayIso()) + "." + format;
     var svgBlob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + svg.text], { type: "image/svg+xml" });
