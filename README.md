@@ -11,6 +11,7 @@ A small static web app that counts how many days a traveler spent in the Schenge
   - **Black** ⛔️: 91 days or more, with a notice to contact a local immigration lawyer who knows Schengen overstay laws
 - Entry and departure days both count. Overlapping trips are counted once.
 - Pick a future check date to plan an upcoming trip.
+- Pick a color scheme from any Schengen country's flag with the palette button in the upper right corner.
 - Switch between light and dark mode with the button in the upper right corner. The page follows the device setting until a visitor picks one.
 - A map of the Schengen Area shades each country you add to a trip in Europe blue. Download the map as PNG, JPG, or SVG.
 - Export your record as CSV (spreadsheet), JSON (data), or TXT (plain text). The file is created in the browser and never uploaded.

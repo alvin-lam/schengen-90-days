@@ -103,3 +103,18 @@ test("the map has a shape for every Schengen country", () => {
   const missing = C.SCHENGEN_COUNTRIES.filter((c) => !onMap.has(c));
   assert.deepStrictEqual(missing, []);
 });
+
+test("every Schengen country has a color scheme", () => {
+  global.localStorage = undefined;
+  const fake = { documentElement: { style: { setProperty() {}, removeProperty() {} }, setAttribute() {} } };
+  global.document = fake;
+  const ctx = {};
+  new Function(require("fs").readFileSync(require("path").join(__dirname, "..", "js", "scheme.js"), "utf8")).call(ctx);
+  const names = ctx.SchengenScheme.SCHEMES.map((s) => s.name);
+  assert.deepStrictEqual(C.SCHENGEN_COUNTRIES.filter((c) => !names.includes(c)), []);
+  ctx.SchengenScheme.SCHEMES.forEach((s) => {
+    assert.strictEqual(s.stripe.length, 3, s.name);
+    [s.primary, s.map, ...s.stripe].filter(Boolean).forEach((c) => assert.match(c, /^#[0-9A-F]{6}$/i, s.name));
+  });
+  delete global.document;
+});

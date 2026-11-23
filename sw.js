@@ -3,12 +3,13 @@
  * Network first, so visitors always get the latest version when online;
  * the cached copy is used only when the network is unavailable.
  */
-var CACHE = "schengen-90-180-v31";
+var CACHE = "schengen-90-180-v32";
 var SHELL = [
   "./",
   "index.html",
   "css/style.css",
   "js/theme.js",
+  "js/scheme.js",
   "js/calc.js",
   "js/export.js",
   "js/app.js",

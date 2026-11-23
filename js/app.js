@@ -223,7 +223,7 @@
   function setupFormatMenu(buttonId, menuId, onChoose) {
     var button = document.getElementById(buttonId);
     var list = document.getElementById(menuId);
-    var items = Array.prototype.slice.call(list.querySelectorAll('[role="menuitem"]'));
+    var items = Array.prototype.slice.call(list.querySelectorAll('[role^="menuitem"]'));
     var wrap = button.parentNode;
 
     function close(returnFocus) {
@@ -243,12 +243,14 @@
         wrap.classList.add("open-up");
       }
       openMenu = { list: list, close: close, wrap: wrap };
-      items[focusIndex || 0].focus();
+      // Start on the checked item when the list has one (the color schemes).
+      var checked = items.filter(function (it) { return it.getAttribute("aria-checked") === "true"; })[0];
+      (focusIndex === undefined && checked ? checked : items[focusIndex || 0]).focus();
     }
 
     button.addEventListener("click", function () {
       if (button.disabled) return;
-      if (list.hidden) open(0); else close(true);
+      if (list.hidden) open(); else close(true);
     });
     button.addEventListener("keydown", function (e) {
       if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !button.disabled) {
@@ -276,6 +278,31 @@
   // Close an open menu when the visitor clicks or taps anywhere else.
   document.addEventListener("click", function (e) {
     if (openMenu && !openMenu.wrap.contains(e.target)) openMenu.close(false);
+  });
+
+  // Color scheme list, one entry per Schengen country plus the default.
+  var S = window.SchengenScheme;
+  var schemeMenu = document.getElementById("scheme-menu");
+  S.SCHEMES.forEach(function (s) {
+    var item = document.createElement("button");
+    item.type = "button";
+    item.setAttribute("role", "menuitemradio");
+    item.setAttribute("data-format", s.id);
+    var swatch = s.stripe.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join("");
+    item.innerHTML = '<span class="scheme-flag" aria-hidden="true">' + s.flag + '</span>' +
+      '<span class="scheme-name">' + s.name + (s.id === "europe" ? " (default)" : "") + '</span>' +
+      '<span class="scheme-swatch" aria-hidden="true">' + swatch + '</span>';
+    schemeMenu.appendChild(item);
+  });
+  function markScheme(id) {
+    Array.prototype.forEach.call(schemeMenu.children, function (item) {
+      item.setAttribute("aria-checked", String(item.getAttribute("data-format") === id));
+    });
+  }
+  markScheme(S.current());
+  setupFormatMenu("scheme-button", "scheme-menu", function (id) {
+    S.choose(id);
+    markScheme(id);
   });
 
   setupFormatMenu("export-download", "export-menu", function (format) {

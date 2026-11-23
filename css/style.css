@@ -4,7 +4,7 @@
   --text: #1c2330;
   --muted: #5d6676;
   --border: #dde1e7;
-  --primary: #1f4fd6;
+  --primary: var(--scheme-primary, #1f4fd6);
   --primary-text: #ffffff;
   --green: #1e8a4c;
   --green-bg: #e6f5ec;
@@ -17,8 +17,8 @@
   --black-text: #ffffff;
   --black-muted: #c3c9d3;
   --black-edge: #0e1014;
-  --brand-link: #1F5FD1;
-  --map-visited: #003399; /* Europe blue, from the EU flag */
+  --brand-link: var(--scheme-link, #1F5FD1);
+  --map-visited: var(--scheme-map, #003399); /* Europe blue by default, from the EU flag */
   --map-member: #cfd5dd;
   --map-other: #f6f7f9;
   --map-sea: #e6edf7;
@@ -32,7 +32,7 @@
       --text: #e8ebf0;
       --muted: #9aa3b2;
       --border: #2c3340;
-      --primary: #5b84f5;
+      --primary: var(--scheme-primary-dark, #5b84f5);
       --green: #4cc982;
       --green-bg: #15301f;
       --yellow: #f2c84b;
@@ -42,8 +42,8 @@
       --red-bg: #3d1a1c;
       --black-panel: #000000;
       --black-edge: #e8ebf0;
-      --brand-link: #7A9CEB;
-      --map-visited: #3d6cf0;
+      --brand-link: var(--scheme-link-dark, #7A9CEB);
+      --map-visited: var(--scheme-map-dark, #3d6cf0);
       --map-member: #3f4756;
       --map-other: #2a303a;
       --map-sea: #151a22;
@@ -57,7 +57,7 @@
     --text: #e8ebf0;
     --muted: #9aa3b2;
     --border: #2c3340;
-    --primary: #5b84f5;
+    --primary: var(--scheme-primary-dark, #5b84f5);
     --green: #4cc982;
     --green-bg: #15301f;
     --yellow: #f2c84b;
@@ -67,8 +67,8 @@
     --red-bg: #3d1a1c;
     --black-panel: #000000;
     --black-edge: #e8ebf0;
-    --brand-link: #7A9CEB;
-    --map-visited: #3d6cf0;
+    --brand-link: var(--scheme-link-dark, #7A9CEB);
+    --map-visited: var(--scheme-map-dark, #3d6cf0);
     --map-member: #3f4756;
     --map-other: #2a303a;
     --map-sea: #151a22;
@@ -117,11 +117,24 @@ h1 { font-size: 1.5rem; margin: 0 0 8px; } /* 24px at the default text size, on 
 h2 { font-size: 1.15rem; margin: 0; }
 .lede { color: var(--muted); margin: 0 0 24px; text-align: center; text-wrap: balance; }
 
-/* Light and dark mode button, upper right corner */
-.theme-toggle {
+/* Flag stripe across the top, in the colors of the chosen scheme */
+.flag-stripe {
+  height: 6px;
+  background: var(--flag-stripe, linear-gradient(90deg, #003399 0 33.4%, #FFCC00 33.4% 66.7%, #003399 66.7% 100%));
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .08);
+}
+
+/* Color scheme and light/dark buttons, upper right corner */
+.top-controls {
   position: absolute;
   top: 16px;
   right: max(16px, env(safe-area-inset-right, 0px));
+  z-index: 30;
+  display: flex;
+  gap: 8px;
+}
+.top-controls .menu-wrap { margin-left: 0; }
+.theme-toggle {
   width: 40px;
   height: 40px;
   display: grid;
@@ -309,7 +322,7 @@ input:focus, select:focus, .btn:focus-visible {
   box-shadow: 0 10px 28px rgba(0, 0, 0, .16);
 }
 .menu-wrap.open-up .format-menu { top: auto; bottom: calc(100% + 6px); }
-.format-menu [role="menuitem"] {
+.format-menu [role^="menuitem"] {
   display: flex;
   width: 100%;
   align-items: baseline;
@@ -324,11 +337,21 @@ input:focus, select:focus, .btn:focus-visible {
   text-align: left;
   cursor: pointer;
 }
-.format-menu [role="menuitem"] strong { min-width: 3.4em; }
-.format-menu [role="menuitem"] span { color: var(--muted); font-size: .9rem; }
-.format-menu [role="menuitem"]:hover,
-.format-menu [role="menuitem"]:focus-visible { background: var(--bg); outline: none; }
-.format-menu [role="menuitem"]:focus-visible { box-shadow: inset 0 0 0 2px var(--primary); }
+.format-menu [role^="menuitem"] strong { min-width: 3.4em; }
+.format-menu [role^="menuitem"] span { color: var(--muted); font-size: .9rem; }
+.format-menu [role^="menuitem"]:hover,
+.format-menu [role^="menuitem"]:focus-visible { background: var(--bg); outline: none; }
+.format-menu [role^="menuitem"]:focus-visible { box-shadow: inset 0 0 0 2px var(--primary); }
+
+/* Color scheme list */
+.format-menu.scheme-menu { left: auto; right: 0; width: 250px; max-height: min(420px, 70vh); overflow-y: auto; }
+.scheme-menu [role^="menuitem"] { align-items: center; min-height: 40px; padding: 8px 10px; }
+.scheme-menu .scheme-flag { font-size: 1.15rem; line-height: 1; }
+.scheme-menu .scheme-name { flex: 1; color: var(--text); font-size: .95rem; }
+.scheme-menu .scheme-swatch { display: flex; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px var(--border); }
+.scheme-menu .scheme-swatch i { width: 9px; height: 14px; }
+.scheme-menu [aria-checked="true"] { background: var(--bg); }
+.scheme-menu [aria-checked="true"] .scheme-name { font-weight: 700; }
 
 /* Europe map */
 .map-wrap { max-width: 520px; margin: 0 auto; }
@@ -386,7 +409,7 @@ input:focus, select:focus, .btn:focus-visible {
 
 @media (max-width: 680px) {
   .container { padding-top: 68px; }
-  .theme-toggle { top: 14px; }
+  .top-controls { top: 14px; }
   .brand { font-size: 2.375rem; } /* 25% larger than 1.9rem */
   .summary-total { font-size: 2.8rem; }
   .trip { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
