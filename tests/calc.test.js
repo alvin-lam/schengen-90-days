@@ -106,7 +106,7 @@ test("the map has a shape for every Schengen country", () => {
 
 test("every Schengen country has a color scheme", () => {
   global.localStorage = undefined;
-  const fake = { documentElement: { style: { setProperty() {}, removeProperty() {} }, setAttribute() {} } };
+  const fake = { documentElement: { style: { setProperty() {}, removeProperty() {} }, setAttribute() {} }, querySelector() { return null; } };
   global.document = fake;
   const ctx = {};
   new Function(require("fs").readFileSync(require("path").join(__dirname, "..", "js", "scheme.js"), "utf8")).call(ctx);

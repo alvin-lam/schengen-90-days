@@ -10,6 +10,7 @@
   "use strict";
 
   var KEY = "schengen-scheme";
+  var DEFAULT_THEME_COLOR = "#0a2ea8"; // matches the theme-color meta tag in index.html
   var SCHEMES = [
     { id: "europe", name: "Europe", flag: "🇪🇺", primary: null, map: null, stripe: ["#003399", "#FFCC00", "#003399"] },
     { id: "austria", name: "Austria", flag: "🇦🇹", primary: "#C8102E", map: "#C8102E", stripe: ["#C8102E", "#FFFFFF", "#C8102E"] },
@@ -73,6 +74,9 @@
     var c = s.stripe;
     style.setProperty("--flag-stripe", "linear-gradient(90deg, " + c[0] + " 0 33.4%, " + c[1] + " 33.4% 66.7%, " + c[2] + " 66.7% 100%)");
     document.documentElement.setAttribute("data-scheme", s.id);
+    // Browser toolbar and installed app title bar follow the scheme too.
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", s.primary || DEFAULT_THEME_COLOR);
     return s;
   }
 
