@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert");
-const C = require("../calc.js");
+const C = require("../js/calc.js");
 
 test("entry and exit days both count", () => {
   const r = C.daysInWindow([{ entry: "2026-01-01", exit: "2026-01-10" }], "2026-02-01");
@@ -56,7 +56,7 @@ test("every country has a native name and a flag", () => {
   assert.strictEqual(C.countryLabel(C.COUNTRIES.find((c) => c.name === "Germany")), "Germany | Deutschland | 🇩🇪");
 });
 
-const X = require("../export.js");
+const X = require("../js/export.js");
 const sampleTrips = [
   { country: "Germany", entry: "2026-06-01", exit: "2026-06-10" },
   { country: "Belgium", entry: "2026-07-01", exit: "2026-07-05" }

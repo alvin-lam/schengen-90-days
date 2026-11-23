@@ -12,7 +12,7 @@ const path = require("path");
 const d3 = require("d3-geo");
 const topojson = require("topojson-client");
 const simplify = require("topojson-simplify");
-const { SCHENGEN_COUNTRIES } = require("../calc.js");
+const { SCHENGEN_COUNTRIES } = require("../js/calc.js");
 
 const WIDTH = 800;
 const DETAIL = 0.15; // topojson quantile: lower keeps fewer points (smaller file, rougher coasts)
