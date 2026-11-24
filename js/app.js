@@ -535,6 +535,7 @@
     var text = shareText();
     var links = {
       x: "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent(SHARE_URL),
+      bluesky: "https://bsky.app/intent/compose?text=" + encodeURIComponent(text + " " + SHARE_URL),
       facebook: "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(SHARE_URL),
       linkedin: "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(SHARE_URL),
       whatsapp: "https://wa.me/?text=" + encodeURIComponent(text + " " + SHARE_URL)
@@ -583,6 +584,20 @@
     shareButton.addEventListener("click", nativeShare);
   } else {
     setupFormatMenu("share-map", "share-menu", function (choice) {
+      if (choice === "instagram") {
+        // Instagram only accepts posts from its app, so save the image and copy the caption.
+        mapImageBlob("png").then(function (blob) {
+          downloadBlob(blob, mapFileName("png"));
+          var caption = shareText() + " " + SHARE_URL;
+          var msg = "Map image saved. Post it from the Instagram app";
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(caption).then(function () {
+              showMapStatus(msg + ". The caption is copied, so you can paste it.");
+            }, function () { showMapStatus(msg + "."); });
+          } else { showMapStatus(msg + "."); }
+        }, function () { showMapStatus("This browser could not create the image. Use Download map instead."); });
+        return;
+      }
       if (choice !== "copy") return; // social links open in a new tab on their own
       function done(ok) { showMapStatus(ok ? "Link copied: " + SHARE_URL : "Copy this link: " + SHARE_URL); }
       if (navigator.clipboard && navigator.clipboard.writeText) {

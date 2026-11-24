@@ -12,7 +12,7 @@ A small static web app that counts how many days a traveler spent in the Schenge
 - Entry and departure days both count. Overlapping trips are counted once.
 - Pick a future check date to plan an upcoming trip.
 - The Appearance button in the upper right corner sets the mode (Auto, Light, or Dark) and a color scheme based on any Schengen country's flag. Auto follows the device setting.
-- A map of the Schengen Area shades each country you add to a trip in Europe blue. Download the map as PNG, JPG, or SVG, or share it. Phones open the share sheet with the map image; other browsers offer X, Facebook, LinkedIn, WhatsApp, and copy link.
+- A map of the Schengen Area shades each country you add to a trip in Europe blue. Download the map as PNG, JPG, or SVG, or share it. Phones open the share sheet with the map image; other browsers offer X, Bluesky, Facebook, Instagram (saves the image and copies the caption), LinkedIn, WhatsApp, and copy link.
 - Export your record as CSV (spreadsheet), JSON (data), or TXT (plain text). The file is created in the browser and never uploaded.
 - Trips are saved in the browser with `localStorage`. Nothing is sent to a server.
 - Installable as a home screen app. Chrome, Edge, and Android show an Install button. iPhone and iPad show the Share > Add to Home Screen steps. The installed app also works offline.
