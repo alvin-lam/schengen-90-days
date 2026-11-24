@@ -3,47 +3,93 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Schengen 90/180 Calculator: Count Your Days | All Trips Considered</title>
-  <meta name="description" content="Free Schengen 90/180 day calculator. Add your trips to count your days in the Schengen Area over the last 180 days, see them on a map, and stay within the 90-day limit.">
+  <title>Schengen 90/180 Day Calculator | All Trips Considered</title>
+  <meta name="description" content="Free Schengen 90/180 calculator. Count your days in the Schengen Area over the last 180 days, see your trips on a map, and export or share your record.">
+  <meta name="author" content="All Trips Considered">
   <link rel="canonical" href="https://90days.alltripsconsidered.com/">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="All Trips Considered">
   <meta property="og:locale" content="en_US">
   <meta property="og:title" content="Schengen 90/180 Calculator">
-  <meta property="og:description" content="Count your days in the Schengen Area over the last 180 days, see them on a map, and stay within the 90-day limit.">
+  <meta property="og:description" content="Count your Schengen days over the last 180 days, see them on a map, and stay within the 90-day limit. Free, private, and works offline.">
   <meta property="og:url" content="https://90days.alltripsconsidered.com/">
   <meta property="og:image" content="https://90days.alltripsconsidered.com/icons/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
   <meta property="og:image:alt" content="Schengen 90/180 Calculator by All Trips Considered">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Schengen 90/180 Calculator">
-  <meta name="twitter:description" content="Count your days in the Schengen Area over the last 180 days, see them on a map, and stay within the 90-day limit.">
+  <meta name="twitter:description" content="Count your Schengen days over the last 180 days, see them on a map, and stay within the 90-day limit. Free, private, and works offline.">
   <meta name="twitter:image" content="https://90days.alltripsconsidered.com/icons/og-image.png">
+  <meta name="twitter:image:alt" content="Schengen 90/180 Calculator by All Trips Considered">
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Schengen 90/180 Calculator",
-  "url": "https://90days.alltripsconsidered.com/",
-  "description": "Free Schengen 90/180 day calculator. Add your trips to count the days you spent in the Schengen Area in the last 180 days, see them on a map, and plan trips within the 90-day limit.",
-  "applicationCategory": "TravelApplication",
-  "operatingSystem": "Any",
-  "browserRequirements": "Requires JavaScript",
-  "isAccessibleForFree": true,
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  },
-  "image": "https://90days.alltripsconsidered.com/icons/og-image.png",
-  "inLanguage": "en",
-  "publisher": {
-    "@type": "Organization",
-    "name": "All Trips Considered",
-    "url": "https://alltripsconsidered.com/"
-  }
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://alltripsconsidered.com/#organization",
+      "name": "All Trips Considered",
+      "url": "https://alltripsconsidered.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://90days.alltripsconsidered.com/icons/icon-512.png",
+        "width": 512,
+        "height": 512
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://90days.alltripsconsidered.com/#website",
+      "name": "Schengen 90/180 Calculator",
+      "url": "https://90days.alltripsconsidered.com/",
+      "inLanguage": "en",
+      "publisher": {
+        "@id": "https://alltripsconsidered.com/#organization"
+      }
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://90days.alltripsconsidered.com/#app",
+      "name": "Schengen 90/180 Calculator",
+      "url": "https://90days.alltripsconsidered.com/",
+      "description": "Free Schengen 90/180 calculator. Count your days in the Schengen Area over the last 180 days, see your trips on a map, and export or share your record.",
+      "applicationCategory": "TravelApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "image": "https://90days.alltripsconsidered.com/icons/og-image.png",
+      "screenshot": "https://90days.alltripsconsidered.com/icons/og-image.png",
+      "inLanguage": "en",
+      "featureList": [
+        "Counts days in the Schengen Area over any 180-day window",
+        "Covers all 29 Schengen countries with native names and flags",
+        "Color-coded status from 0 to 90+ days",
+        "Map of visited Schengen countries, downloadable as JPG, PNG, or SVG",
+        "Share your map to social media",
+        "Export trips as CSV, JSON, or TXT",
+        "Light, dark, and flag color schemes",
+        "Installable as a home screen app that works offline",
+        "Trips stay on your device"
+      ],
+      "isPartOf": {
+        "@id": "https://90days.alltripsconsidered.com/#website"
+      },
+      "publisher": {
+        "@id": "https://alltripsconsidered.com/#organization"
+      },
+      "author": {
+        "@id": "https://alltripsconsidered.com/#organization"
+      }
+    }
+  ]
 }
   </script>
   <link rel="icon" href="favicon.ico" sizes="48x48">

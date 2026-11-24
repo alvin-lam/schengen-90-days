@@ -136,7 +136,7 @@ When changing any file the offline app uses, increase the version number in the 
   ```
 
   Then replace the SVG between the `MAP START` and `MAP END` comments in `index.html` with `tools/europe-map.svg`.
-- **Search engines:** the page title, description, canonical address, share image (`icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `index.html`. Update `lastmod` in `sitemap.xml` after major changes.
+- **Search engines:** the title, description, canonical address, share tags (Open Graph and X), share image (`icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `index.html` and `privacy.html`. The main page describes the organization, the site, and the app with its feature list; keep that list in step with new features. Keep titles under about 60 characters so search results do not cut them off. Update `lastmod` in `sitemap.xml` after major changes.
 - **Map data:** Natural Earth (public domain), through the `world-atlas` package.
 
 ## Roadmap
