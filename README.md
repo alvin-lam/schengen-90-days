@@ -51,6 +51,10 @@ Trips are saved in the browser under the key `schengen-90-180-trips`:
 
 Countries are stored by ISO code, never by name. Older saves (version 1, a plain list with English country names) are upgraded automatically the first time a visitor opens the new version. If the format changes again, raise `DATA_VERSION` in `js/calc.js` and extend `upgradeSaved` so existing trips carry over.
 
+## Dates, times, and numbers
+
+The page shows dates, times, and numbers in the visitor's device format (language and region), including the 12 or 24 hour clock and local digits. The TXT export uses the same device formats, with the export time in the device's time zone. Saved data, CSV, JSON, and file names always use `YYYY-MM-DD` so spreadsheets and other programs read them reliably. Day counting never depends on the time zone.
+
 ## Privacy
 
 Trips, the chosen mode, and the color scheme are saved only in the visitor's browser (`localStorage`). Nothing is uploaded. Exported and downloaded files are created on the device. Sharing sends only what the visitor chooses to share.

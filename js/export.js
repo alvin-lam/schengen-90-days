@@ -66,26 +66,39 @@
   }
 
   /** A readable summary for notes, email, or printing. */
-  function toTXT(record) {
+  // Plain formatting used when no device formatter is given (tests, Node).
+  var PLAIN = {
+    date: function (iso) { return iso; },
+    dateTime: function (ts) { return ts.slice(0, 16).replace("T", " ") + " UTC"; },
+    number: function (n) { return String(n); }
+  };
+
+  /**
+   * A readable summary for notes, email, or printing. The page passes the
+   * device's own date, time, and number formats in fmt.
+   */
+  function toTXT(record, fmt) {
+    fmt = fmt || PLAIN;
+    var n = fmt.number;
     var lines = [
       record.app,
-      "Exported: " + record.exportedAt.slice(0, 10),
+      "Exported: " + fmt.dateTime(record.exportedAt),
       "",
-      "Check date: " + record.checkDate,
-      "180-day window: " + record.window.start + " to " + record.window.end,
-      "Days in the Schengen Area: " + record.totalDays + " / " + record.limitDays,
+      "Check date: " + fmt.date(record.checkDate),
+      "180-day window: " + fmt.date(record.window.start) + " to " + fmt.date(record.window.end),
+      "Days in the Schengen Area: " + n(record.totalDays) + " / " + n(record.limitDays),
       "Status: " + record.statusLabel,
       record.daysOver > 0
-        ? "Exceeded by: " + record.daysOver + (record.daysOver === 1 ? " day" : " days")
-        : "Days remaining: " + record.daysRemaining,
+        ? "Exceeded by: " + n(record.daysOver) + (record.daysOver === 1 ? " day" : " days")
+        : "Days remaining: " + n(record.daysRemaining),
       "",
-      "Trips (" + record.trips.length + ")"
+      "Trips (" + n(record.trips.length) + ")"
     ];
     record.trips.forEach(function (t, i) {
       var name = t.country ? t.country + (t.nativeName ? " (" + t.nativeName + ")" : "") : "Country not selected";
-      var dates = (t.entryDate || "?") + " to " + (t.departureDate || "?");
-      lines.push((i + 1) + ". " + name + ": " + dates + ", " + t.tripDays +
-        (t.tripDays === 1 ? " day" : " days") + " (" + t.daysInWindow + " in window)");
+      var dates = (t.entryDate ? fmt.date(t.entryDate) : "?") + " to " + (t.departureDate ? fmt.date(t.departureDate) : "?");
+      lines.push(n(i + 1) + ". " + name + ": " + dates + ", " + n(t.tripDays) +
+        (t.tripDays === 1 ? " day" : " days") + " (" + n(t.daysInWindow) + " in window)");
     });
     lines.push("", "Entry and departure days both count. This record is for general information only and is not legal advice.");
     return lines.join("\n") + "\n";

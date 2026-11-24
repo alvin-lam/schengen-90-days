@@ -109,7 +109,7 @@
       var value = node.querySelector(".trip-days-value");
       var length = C.tripLength(trip);
       var counted = result.perTrip[i];
-      value.textContent = counted;
+      value.textContent = formatNumber(counted);
       value.title = length && counted !== length
         ? counted + " of " + length + " trip days fall inside the 180 day window"
         : "";
@@ -118,7 +118,7 @@
     // Summary.
     var summary = document.getElementById("summary");
     summary.className = "summary status-" + status;
-    document.getElementById("total-days").textContent = result.total;
+    document.getElementById("total-days").textContent = formatNumber(result.total);
     document.getElementById("window-range").textContent =
       formatDate(result.windowStart) + " to " + formatDate(result.windowEnd);
 
@@ -132,8 +132,8 @@
 
     var remaining = 90 - result.total;
     document.getElementById("remaining-text").textContent = remaining >= 0
-      ? remaining + (remaining === 1 ? " day" : " days") + " remaining in this window."
-      : "Exceeded by " + (-remaining) + (remaining === -1 ? " day." : " days.");
+      ? formatNumber(remaining) + (remaining === 1 ? " day" : " days") + " remaining in this window."
+      : "Exceeded by " + formatNumber(-remaining) + (remaining === -1 ? " day." : " days.");
 
     var meter = document.getElementById("meter");
     meter.setAttribute("aria-valuenow", String(Math.min(result.total, 90)));
@@ -157,14 +157,27 @@
     });
     var names = C.COUNTRIES.filter(function (c) { return chosen[c.code]; }).map(function (c) { return c.name; });
     var summary = document.getElementById("map-summary");
-    summary.textContent = names.length ? "In your trips (" + names.length + "): " + names.join(", ") : "";
+    summary.textContent = names.length ? "In your trips (" + formatNumber(names.length) + "): " + names.join(", ") : "";
     summary.hidden = !names.length;
   }
 
+  /*
+   * Dates, times, and numbers use the device's own settings (language and
+   * region), so visitors see the formats they are used to. Saved data, CSV,
+   * JSON, and file names keep YYYY-MM-DD so other programs can read them.
+   */
   function formatDate(iso) {
+    // Date-only values are stored as UTC midnight; format them in UTC so the day never shifts.
     var d = new Date(iso + "T00:00:00Z");
     return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
   }
+  function formatDateTime(isoTimestamp) {
+    // A real moment in time: shown in the device's own time zone and 12 or 24 hour clock.
+    return new Date(isoTimestamp).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  }
+  var numberFormat = new Intl.NumberFormat();
+  function formatNumber(n) { return numberFormat.format(n); }
+  var DEVICE_FORMAT = { date: formatDate, dateTime: formatDateTime, number: formatNumber };
 
   document.getElementById("add-trip").addEventListener("click", function () {
     trips.push({ id: C.newTripId(), country: "", entry: "", exit: "" });
@@ -207,7 +220,7 @@
     var reference = referenceInput.value || C.todayIso();
     var record = X.buildRecord(trips, reference);
     return {
-      text: X.FORMATS[format].serialize(record),
+      text: X.FORMATS[format].serialize(record, DEVICE_FORMAT),
       mime: X.FORMATS[format].mime,
       name: X.fileName(format, reference),
       format: format
