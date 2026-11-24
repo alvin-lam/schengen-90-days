@@ -6,7 +6,7 @@
   --border: #dde1e7;
   --primary: var(--scheme-primary, #1f4fd6);
   --primary-text: #ffffff;
-  --green: #1e8a4c;
+  --green: #187a42; /* 4.8:1 on the pale green status background */
   --green-bg: #e6f5ec;
   --yellow: #8a6500;
   --yellow-bg: #fff6d6;
@@ -142,6 +142,8 @@ h2 { font-size: 1.15rem; margin: 0; }
 .theme-toggle:hover { border-color: var(--muted); }
 .theme-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .theme-toggle svg { fill: currentColor; stroke: currentColor; }
+.noscript { margin: 0; padding: 14px 16px; background: var(--yellow-bg); color: var(--text); text-align: center; font-weight: 600; }
+
 /* Summary */
 .summary {
   border-radius: var(--radius);
