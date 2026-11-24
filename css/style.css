@@ -371,6 +371,7 @@ input:focus, select:focus, .btn:focus-visible {
 .share-button { color: var(--text); border-color: var(--border); }
 .share-icon { flex: none; }
 .share-menu a[role="menuitem"] { text-decoration: none; }
+.format-menu.share-menu { max-height: min(460px, 70vh); overflow-y: auto; }
 .map-download-row { gap: 10px; }
 
 /* Europe map */

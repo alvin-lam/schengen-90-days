@@ -243,6 +243,9 @@
       if (rect.bottom > window.innerHeight - 8 && button.getBoundingClientRect().top > rect.height + 8) {
         wrap.classList.add("open-up");
       }
+      // If the list still runs past the screen edge, scroll it into view.
+      var placed = list.getBoundingClientRect();
+      if (placed.bottom > window.innerHeight || placed.top < 0) list.scrollIntoView({ block: "nearest" });
       openMenu = { list: list, close: close, wrap: wrap };
       // Start on the checked item when the list has one (the color schemes).
       var checked = items.filter(function (it) { return it.getAttribute("aria-checked") === "true"; })[0];
@@ -538,7 +541,13 @@
       bluesky: "https://bsky.app/intent/compose?text=" + encodeURIComponent(text + " " + SHARE_URL),
       facebook: "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(SHARE_URL),
       linkedin: "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(SHARE_URL),
-      whatsapp: "https://wa.me/?text=" + encodeURIComponent(text + " " + SHARE_URL)
+      whatsapp: "https://wa.me/?text=" + encodeURIComponent(text + " " + SHARE_URL),
+      email: "mailto:?subject=" + encodeURIComponent("My Schengen map") + "&body=" + encodeURIComponent(text + " " + SHARE_URL),
+      pinterest: "https://pinterest.com/pin/create/button/?url=" + encodeURIComponent(SHARE_URL) +
+        "&media=" + encodeURIComponent(SHARE_URL + "icons/icon-512.png") + "&description=" + encodeURIComponent(text),
+      reddit: "https://www.reddit.com/submit?url=" + encodeURIComponent(SHARE_URL) + "&title=" + encodeURIComponent(text),
+      telegram: "https://t.me/share/url?url=" + encodeURIComponent(SHARE_URL) + "&text=" + encodeURIComponent(text),
+      threads: "https://www.threads.net/intent/post?text=" + encodeURIComponent(text + " " + SHARE_URL)
     };
     Object.keys(links).forEach(function (k) {
       shareMenu.querySelector('[data-format="' + k + '"]').setAttribute("href", links[k]);
