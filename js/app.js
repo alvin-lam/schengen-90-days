@@ -410,34 +410,84 @@
     return { text: new XMLSerializer().serializeToString(copy), width: box.width, height: box.height };
   }
 
+  // Downloaded maps get a title band on top and the site address below.
+  var FRAME = { header: 118, footer: 58 };
+  var SITE_URL = "90days.alltripsconsidered.com";
+  var SERIF = '"Instrument Serif", Georgia, "Times New Roman", serif';
+
+  function frameColors() {
+    var t = getComputedStyle(document.documentElement);
+    function v(n) { return t.getPropertyValue(n).trim(); }
+    return { bg: v("--surface"), brand: v("--brand-link"), text: v("--text"), muted: v("--muted"), line: v("--border"),
+      sans: getComputedStyle(document.body).fontFamily };
+  }
+
+  function escapeXml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
+
+  // SVG file: the map plus title and address as real text.
+  function framedSvg(map) {
+    var c = frameColors();
+    var w = map.width, h = map.height + FRAME.header + FRAME.footer;
+    var inner = map.text.replace(/^<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + " " + h + '">' +
+      '<style>@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif&amp;display=swap");</style>' +
+      '<rect width="' + w + '" height="' + h + '" fill="' + c.bg + '"/>' +
+      '<text x="' + w / 2 + '" y="58" text-anchor="middle" font-family="' + escapeXml(SERIF) + '" font-size="46" fill="' + c.brand + '">All Trips Considered</text>' +
+      '<text x="' + w / 2 + '" y="96" text-anchor="middle" font-family="' + escapeXml(c.sans) + '" font-size="24" font-weight="700" fill="' + c.text + '">Schengen 90/180 Calculator</text>' +
+      '<g transform="translate(0 ' + FRAME.header + ')">' + inner + '</g>' +
+      '<text x="' + w / 2 + '" y="' + (h - 22) + '" text-anchor="middle" font-family="' + escapeXml(c.sans) + '" font-size="18" fill="' + c.muted + '">' + SITE_URL + '</text>' +
+      '</svg>';
+  }
+
+  // PNG and JPG: draw the map, then write the text with the page's own fonts.
+  function drawFramed(map, mapImg) {
+    var c = frameColors();
+    var w = map.width, h = map.height + FRAME.header + FRAME.footer;
+    var canvas = document.createElement("canvas");
+    canvas.width = w * MAP_SCALE;
+    canvas.height = h * MAP_SCALE;
+    var ctx = canvas.getContext("2d");
+    ctx.scale(MAP_SCALE, MAP_SCALE);
+    ctx.fillStyle = c.bg;
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(mapImg, 0, FRAME.header, map.width, map.height);
+    ctx.textAlign = "center";
+    ctx.fillStyle = c.brand;
+    ctx.font = "46px " + SERIF;
+    ctx.fillText("All Trips Considered", w / 2, 58);
+    ctx.fillStyle = c.text;
+    ctx.font = "700 24px " + c.sans;
+    ctx.fillText("Schengen 90/180 Calculator", w / 2, 96);
+    ctx.fillStyle = c.muted;
+    ctx.font = "18px " + c.sans;
+    ctx.fillText(SITE_URL, w / 2, h - 22);
+    return canvas;
+  }
+
   setupFormatMenu("map-download", "map-menu", function (format) {
-    var svg = standaloneMapSvg();
+    var map = standaloneMapSvg();
     var name = "schengen-map-" + (referenceInput.value || C.todayIso()) + "." + format;
-    var svgBlob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + svg.text], { type: "image/svg+xml" });
     if (format === "svg") {
-      downloadBlob(svgBlob, name);
+      downloadBlob(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + framedSvg(map)], { type: "image/svg+xml" }), name);
       showMapStatus("Downloaded " + name + ".");
       return;
     }
-    var url = URL.createObjectURL(svgBlob);
+    function fail() { showMapStatus("This browser could not create the image. Try SVG instead."); }
+    var url = URL.createObjectURL(new Blob([map.text], { type: "image/svg+xml" }));
     var img = new Image();
     img.onload = function () {
-      var canvas = document.createElement("canvas");
-      canvas.width = svg.width * MAP_SCALE;
-      canvas.height = svg.height * MAP_SCALE;
-      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(url);
-      var type = format === "jpg" ? "image/jpeg" : "image/png";
-      canvas.toBlob(function (blob) {
-        if (!blob) { showMapStatus("This browser could not create the image. Try SVG instead."); return; }
-        downloadBlob(blob, name);
-        showMapStatus("Downloaded " + name + ".");
-      }, type, 0.92);
+      // Make sure the title font is ready before writing text onto the image.
+      var fontsReady = document.fonts && document.fonts.load ? document.fonts.load('46px "Instrument Serif"').catch(function () {}) : Promise.resolve();
+      fontsReady.then(function () {
+        drawFramed(map, img).toBlob(function (blob) {
+          if (!blob) { fail(); return; }
+          downloadBlob(blob, name);
+          showMapStatus("Downloaded " + name + ".");
+        }, format === "jpg" ? "image/jpeg" : "image/png", 0.92);
+      });
     };
-    img.onerror = function () {
-      URL.revokeObjectURL(url);
-      showMapStatus("This browser could not create the image. Try SVG instead.");
-    };
+    img.onerror = function () { URL.revokeObjectURL(url); fail(); };
     img.src = url;
   });
 
