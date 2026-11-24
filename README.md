@@ -45,7 +45,7 @@ A free web app from [All Trips Considered](https://alltripsconsidered.com) that 
 - Notes on how days are counted and that the tool is not legal advice.
 - **Rules last checked:** the date the Schengen rules were last reviewed, why Cyprus, Ireland, and the microstates (Andorra, Monaco, San Marino, Vatican City) are not in the country list, and a note about the EU Entry/Exit System.
 - A link to the privacy page and the copyright line for All Trips Considered.
-- **Quick Links** to the other All Trips Considered tools: Jet Lag, My Maps, Point Calculator, Schengen 90/180 (this site, highlighted), and Trip Finder.
+- **Travel Tools** links to the other All Trips Considered tools: Jet Lag, My Maps, Point Calculator, Schengen 90/180 (this site, highlighted), and Trip Finder. Buttons on wider screens, a list on phones.
 
 ## Saved data
 
