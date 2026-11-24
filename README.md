@@ -96,7 +96,20 @@ The tests cover the 180-day window, the status levels, overlapping trips, every 
 
 ## Publishing
 
-The site is hosted on GitHub Pages at the custom domain in `CNAME`. Pages publishes from the `claude/peaceful-rubin-dyhyh5` branch, so pushing to that branch updates the live site, usually within a few minutes.
+The site is hosted on GitHub Pages at the custom domain in `CNAME`.
+
+### Branches
+
+| Branch | Purpose |
+|---|---|
+| `claude/peaceful-rubin-dyhyh5` | Working branch. All changes are pushed here first. |
+| `prod` | Production and the repository's default branch. Changes reach it only when the site owner approves a merge. |
+
+Workflow:
+
+1. Make and test changes on `claude/peaceful-rubin-dyhyh5` (or a short-lived feature branch merged into it), then push.
+2. Merge into `prod` only when the site owner explicitly asks. Keep it a fast-forward merge so `prod` never has commits of its own.
+3. GitHub Pages should publish from `prod` (Settings > Pages > Build and deployment). The live site then updates a few minutes after `prod` changes.
 
 When changing any file the offline app uses, increase the version number in the `CACHE` name at the top of `sw.js`. Installed apps then fetch the new files on their next visit while online.
 
