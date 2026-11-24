@@ -126,7 +126,6 @@ h2 { font-size: 1.15rem; margin: 0; }
   display: flex;
   gap: 8px;
 }
-.top-controls .menu-wrap { margin-left: 0; }
 .theme-toggle {
   width: 40px;
   height: 40px;
@@ -143,16 +142,6 @@ h2 { font-size: 1.15rem; margin: 0; }
 .theme-toggle:hover { border-color: var(--muted); }
 .theme-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .theme-toggle svg { fill: currentColor; stroke: currentColor; }
-.theme-toggle .icon-moon { stroke: none; }
-/* Show the moon in light mode (tap for dark) and the sun in dark mode (tap for light). */
-.theme-toggle .icon-sun { display: none; }
-:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
-:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: block; }
-  :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
-}
-
 /* Summary */
 .summary {
   border-radius: var(--radius);
@@ -336,15 +325,47 @@ input:focus, select:focus, .btn:focus-visible {
 .format-menu [role^="menuitem"]:focus-visible { background: var(--bg); outline: none; }
 .format-menu [role^="menuitem"]:focus-visible { box-shadow: inset 0 0 0 2px var(--primary); }
 
-/* Color scheme list */
-.format-menu.scheme-menu { left: auto; right: 0; width: 250px; max-height: min(420px, 70vh); overflow-y: auto; }
-.scheme-menu [role^="menuitem"] { align-items: center; min-height: 40px; padding: 8px 10px; }
-.scheme-menu .scheme-flag { font-size: 1.15rem; line-height: 1; }
-.scheme-menu .scheme-name { flex: 1; color: var(--text); font-size: .95rem; }
-.scheme-menu .scheme-swatch { display: flex; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px var(--border); }
-.scheme-menu .scheme-swatch i { width: 9px; height: 14px; }
-.scheme-menu [aria-checked="true"] { background: var(--bg); }
-.scheme-menu [aria-checked="true"] .scheme-name { font-weight: 700; }
+/* Appearance panel: mode and color scheme */
+.appearance-wrap { position: relative; }
+.appearance-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .18);
+  text-align: left;
+}
+.appearance-title { font-size: 1rem; margin: 0 0 12px; }
+.appearance-group { border: 0; margin: 0; padding: 0; min-width: 0; }
+/* A shadow, not a border, so the divider does not wrap around the legend. */
+.appearance-group + .appearance-group { margin-top: 16px; padding-top: 14px; box-shadow: inset 0 1px 0 var(--border); }
+.appearance-group legend { float: left; width: 100%; padding: 0; margin-bottom: 8px; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.appearance-group legend + * { clear: both; }
+.segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: var(--bg); border-radius: 10px; }
+.segmented label { position: relative; }
+.segmented input, .scheme-option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.segmented span { display: grid; place-items: center; min-height: 36px; border-radius: 7px; font-weight: 600; font-size: .9rem; color: var(--muted); cursor: pointer; }
+.segmented input:checked + span { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+.segmented input:focus-visible + span { outline: 2px solid var(--primary); outline-offset: 1px; }
+.mode-hint { margin: 8px 2px 0; font-size: .82rem; color: var(--muted); }
+.scheme-list { max-height: min(300px, 45vh); overflow-y: auto; margin: 0 -6px; padding: 0 6px; }
+.scheme-option { position: relative; display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
+.scheme-option:hover { background: var(--bg); }
+.scheme-option:has(input:focus-visible) { box-shadow: inset 0 0 0 2px var(--primary); }
+.scheme-option:has(input:checked) { background: var(--bg); }
+.scheme-flag { font-size: 1.15rem; line-height: 1; }
+.scheme-name { flex: 1; font-size: .95rem; }
+.scheme-option input:checked ~ .scheme-name { font-weight: 700; }
+.scheme-check { width: 16px; color: var(--primary); font-weight: 700; visibility: hidden; }
+.scheme-option input:checked ~ .scheme-check { visibility: visible; }
+.scheme-swatch { display: flex; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px var(--border); }
+.scheme-swatch i { width: 9px; height: 14px; }
 
 /* Europe map */
 .map-wrap { max-width: 520px; margin: 0 auto; }

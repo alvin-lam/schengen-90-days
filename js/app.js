@@ -280,29 +280,67 @@
     if (openMenu && !openMenu.wrap.contains(e.target)) openMenu.close(false);
   });
 
-  // Color scheme list, one entry per Schengen country plus the default.
+  // Appearance panel: Auto / Light / Dark mode and the color schemes.
   var S = window.SchengenScheme;
-  var schemeMenu = document.getElementById("scheme-menu");
+  var T = window.SchengenTheme;
+  var appearanceButton = document.getElementById("appearance-button");
+  var appearancePanel = document.getElementById("appearance-panel");
+  var schemeList = document.getElementById("scheme-list");
+  var modeHint = document.getElementById("mode-hint");
+
   S.SCHEMES.forEach(function (s) {
-    var item = document.createElement("button");
-    item.type = "button";
-    item.setAttribute("role", "menuitemradio");
-    item.setAttribute("data-format", s.id);
+    var option = document.createElement("label");
+    option.className = "scheme-option";
     var swatch = s.stripe.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join("");
-    item.innerHTML = '<span class="scheme-flag" aria-hidden="true">' + s.flag + '</span>' +
+    option.innerHTML = '<input type="radio" name="scheme" value="' + s.id + '">' +
+      '<span class="scheme-flag" aria-hidden="true">' + s.flag + '</span>' +
       '<span class="scheme-name">' + s.name + (s.id === "europe" ? " (default)" : "") + '</span>' +
-      '<span class="scheme-swatch" aria-hidden="true">' + swatch + '</span>';
-    schemeMenu.appendChild(item);
+      '<span class="scheme-swatch" aria-hidden="true">' + swatch + '</span>' +
+      '<span class="scheme-check" aria-hidden="true">\u2713</span>';
+    schemeList.appendChild(option);
   });
-  function markScheme(id) {
-    Array.prototype.forEach.call(schemeMenu.children, function (item) {
-      item.setAttribute("aria-checked", String(item.getAttribute("data-format") === id));
-    });
+
+  function syncAppearance() {
+    var mode = T.get();
+    Array.prototype.forEach.call(appearancePanel.querySelectorAll('input[name="mode"]'), function (r) { r.checked = r.value === mode; });
+    var scheme = S.current();
+    Array.prototype.forEach.call(schemeList.querySelectorAll('input[name="scheme"]'), function (r) { r.checked = r.value === scheme; });
+    modeHint.textContent = mode === "auto"
+      ? "Follows your device, which is set to " + T.effective() + " right now."
+      : "Always " + mode + ", whatever your device is set to.";
   }
-  markScheme(S.current());
-  setupFormatMenu("scheme-button", "scheme-menu", function (id) {
-    S.choose(id);
-    markScheme(id);
+
+  appearancePanel.addEventListener("change", function (e) {
+    if (e.target.name === "mode") T.set(e.target.value);
+    if (e.target.name === "scheme") S.choose(e.target.value);
+    syncAppearance();
+  });
+  if (T.media && T.media.addEventListener) T.media.addEventListener("change", syncAppearance);
+
+  function openAppearance() {
+    syncAppearance();
+    appearancePanel.hidden = false;
+    appearanceButton.setAttribute("aria-expanded", "true");
+    appearancePanel.querySelector('input[name="mode"]:checked').focus();
+  }
+  function closeAppearance(returnFocus) {
+    if (appearancePanel.hidden) return;
+    appearancePanel.hidden = true;
+    appearanceButton.setAttribute("aria-expanded", "false");
+    if (returnFocus) appearanceButton.focus();
+  }
+  appearanceButton.addEventListener("click", function () {
+    if (appearancePanel.hidden) openAppearance(); else closeAppearance(true);
+  });
+  appearancePanel.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { e.preventDefault(); closeAppearance(true); }
+  });
+  document.addEventListener("click", function (e) {
+    if (!appearancePanel.hidden && !appearancePanel.parentNode.contains(e.target)) closeAppearance(false);
+  });
+  // Close when keyboard focus leaves the panel.
+  appearancePanel.addEventListener("focusout", function (e) {
+    if (e.relatedTarget && !appearancePanel.parentNode.contains(e.relatedTarget)) closeAppearance(false);
   });
 
   setupFormatMenu("export-download", "export-menu", function (format) {

@@ -1,55 +1,44 @@
 /*
- * Light and dark mode button.
+ * Light, dark, or automatic mode.
  * Loaded in <head> so a saved choice applies before the page paints,
- * which avoids a flash of the wrong theme. With no saved choice the page
- * follows the device setting, as before.
+ * which avoids a flash of the wrong theme. "auto" (the default) follows
+ * the device setting and keeps following it if the device switches.
  */
-(function () {
+(function (root) {
   "use strict";
 
   var KEY = "schengen-theme";
-  var root = document.documentElement;
+  var html = document.documentElement;
   var media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 
-  function saved() {
+  function get() {
     try {
       var v = localStorage.getItem(KEY);
-      return v === "light" || v === "dark" ? v : null;
+      return v === "light" || v === "dark" ? v : "auto";
     } catch (e) {
-      return null;
+      return "auto";
     }
   }
 
+  function apply(mode) {
+    if (mode === "light" || mode === "dark") html.setAttribute("data-theme", mode);
+    else html.removeAttribute("data-theme");
+  }
+
+  function set(mode) {
+    apply(mode);
+    try {
+      if (mode === "auto") localStorage.removeItem(KEY);
+      else localStorage.setItem(KEY, mode);
+    } catch (e) { /* lasts for this visit only */ }
+  }
+
+  // The mode the page is showing right now, after resolving "auto".
   function effective() {
-    return root.getAttribute("data-theme") || (media && media.matches ? "dark" : "light");
+    return html.getAttribute("data-theme") || (media && media.matches ? "dark" : "light");
   }
 
-  var initial = saved();
-  if (initial) root.setAttribute("data-theme", initial);
+  apply(get());
 
-  function syncButton(button) {
-    var dark = effective() === "dark";
-    var label = dark ? "Switch to light mode" : "Switch to dark mode";
-    button.setAttribute("aria-label", label);
-    button.setAttribute("title", label);
-    button.setAttribute("aria-pressed", String(dark));
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    var button = document.getElementById("theme-toggle");
-    if (!button) return;
-    syncButton(button);
-
-    button.addEventListener("click", function () {
-      var next = effective() === "dark" ? "light" : "dark";
-      root.setAttribute("data-theme", next);
-      try { localStorage.setItem(KEY, next); } catch (e) { /* choice lasts for this visit only */ }
-      syncButton(button);
-    });
-
-    // Keep the label right if the device switches theme and no choice is saved.
-    if (media && media.addEventListener) {
-      media.addEventListener("change", function () { syncButton(button); });
-    }
-  });
-})();
+  root.SchengenTheme = { get: get, set: set, effective: effective, media: media };
+})(this);
