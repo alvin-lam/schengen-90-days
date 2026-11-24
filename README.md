@@ -1,39 +1,77 @@
 # Schengen 90/180 Calculator
 
-A small static web app that counts how many days a traveler spent in the Schengen Area during the 180 days ending on a chosen date (today by default).
+**Live site:** https://90days.alltripsconsidered.com
+
+A free web app from [All Trips Considered](https://alltripsconsidered.com) that counts how many days a traveler has spent in the Schengen Area during the 180 days ending on a chosen date. Everything runs in the browser. Trips are never sent to a server.
 
 ## Features
 
-- Running total of days in the Schengen Area, shown in color:
-  - **Green** ✅: 0 to 45 days
-  - **Yellow** ⚠️: 46 to 60 days
-  - **Red** ‼️: 61 to 90 days
-  - **Black** ⛔️: 91 days or more, with a notice to contact a local immigration lawyer who knows Schengen overstay laws
-- Entry and departure days both count. Overlapping trips are counted once.
-- Pick a future check date to plan an upcoming trip.
-- The Appearance button in the upper right corner sets the mode (Auto, Light, or Dark) and a color scheme based on any Schengen country's flag. Auto follows the device setting.
-- A map of the Schengen Area shades each country you add to a trip in Europe blue. Download the map as PNG, JPG, or SVG, or share it. Phones open the share sheet with the map image; other browsers offer Bluesky, Facebook, Instagram (saves the image and copies the caption), LinkedIn, Pinterest, Reddit, Threads, WhatsApp, X, and copy link.
-- Export your record as CSV (spreadsheet), JSON (data), or TXT (plain text). The file is created in the browser and never uploaded.
-- Trips are saved in the browser with `localStorage`. Nothing is sent to a server.
-- Installable as a home screen app. Chrome, Edge, and Android show an Install button. iPhone and iPad show the Share > Add to Home Screen steps. The installed app also works offline.
+### Counting days
+- Add any number of trips, each with a Schengen country, an entry date, and a departure date.
+- The country list shows all 29 Schengen countries with the English name, native name, and flag, for example "Germany | Deutschland | 🇩🇪".
+- Entry and departure days both count as full days. Overlapping trips are counted once.
+- The check date defaults to today. Pick a future date to plan an upcoming trip.
+- The running total is shown in color with a status emoji:
 
-## Running
+  | Days used | Color | Emoji |
+  |---|---|---|
+  | 0 to 45 | Green | ✅ |
+  | 46 to 60 | Yellow | ⚠️ |
+  | 61 to 90 | Red | ‼️ |
+  | 91 or more | Black | ⛔️ |
 
-No build step is needed. Open `index.html` in a browser, or serve the folder:
+- At 91 days or more, a notice asks the visitor to contact a local immigration lawyer who knows Schengen overstay laws.
+
+### Map
+- A map of the Schengen Area shades each country in the visitor's trips. Luxembourg, Liechtenstein, and Malta also get dots, since they are too small to see.
+- **Download** saves the map as JPG, PNG, or SVG, with the titles at the top and the site address at the bottom.
+- **Share** opens the phone's share sheet with the map image attached. Browsers that cannot share files get a menu instead: Bluesky, Facebook, Instagram, LinkedIn, Pinterest, Reddit, Threads, WhatsApp, X, and Copy link. Instagram does not accept posts from websites, so that option saves the image and copies the caption.
+
+### Export
+- **Download** in the Export section saves the trips and totals as CSV (spreadsheet), JSON (data), or TXT (plain text). The file is created in the browser and never uploaded.
+
+### Appearance
+- The button in the upper right corner opens the Appearance panel.
+- **Mode:** Auto (default, follows the device), Light, or Dark.
+- **Color:** Europe (default) or a scheme based on any Schengen country's flag. It recolors the buttons, links, map shading, and browser toolbar. The green, yellow, red, and black status colors never change.
+
+### App and offline use
+- The site can be installed as a home screen app. Chrome, Edge, and Android show an Install button. iPhone and iPad show the Share > Add to Home Screen steps.
+- The installed app works offline.
+- Desktop and phone layouts are both supported, along with a back to top button and keyboard navigation for all menus.
+
+## Privacy
+
+Trips, the chosen mode, and the color scheme are saved only in the visitor's browser (`localStorage`). Nothing is uploaded. Exported and downloaded files are created on the device. Sharing sends only what the visitor chooses to share.
+
+## Project layout
+
+```
+index.html             The page, including the inline Europe map
+css/style.css          All styles, with light and dark color tokens
+js/calc.js             Day counting rules, country list, status levels
+js/export.js           CSV, JSON, and TXT export
+js/app.js              Page behavior: trips, map, downloads, sharing, menus
+js/theme.js            Auto, Light, and Dark mode (loaded in <head>)
+js/scheme.js           Flag color schemes (loaded in <head>)
+js/install.js          Add to Home Screen prompt and service worker setup
+sw.js                  Service worker for offline use (must stay at the root)
+manifest.webmanifest   App name, colors, and icons for installing
+icons/, favicon.ico    App icons and favicons
+tests/calc.test.js     Unit tests
+tools/build-map.js     Rebuilds the map from Natural Earth data
+CNAME                  Custom domain for GitHub Pages
+```
+
+## Running locally
+
+No build step is needed. Serve the folder and open it in a browser:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-## Map
-
-The Europe map is inline SVG built from Natural Earth data (via the `world-atlas` package). To rebuild it:
-
-```bash
-cd tools && npm install && node build-map.js
-```
-
-Then replace the SVG between the `MAP START` and `MAP END` comments in `index.html` with `tools/europe-map.svg`.
+Then visit http://localhost:8000. Use a local server rather than opening `index.html` directly, so offline support and installing work.
 
 ## Tests
 
@@ -41,4 +79,28 @@ Then replace the SVG between the `MAP START` and `MAP END` comments in `index.ht
 node --test tests/calc.test.js
 ```
 
-This tool provides general information only and is not legal advice.
+The tests cover the 180-day window, the status levels, overlapping trips, every export format, and checks that every Schengen country appears on the map and has a color scheme.
+
+## Publishing
+
+The site is hosted on GitHub Pages at the custom domain in `CNAME`. Pages publishes from the `claude/peaceful-rubin-dyhyh5` branch, so pushing to that branch updates the live site, usually within a few minutes.
+
+When changing any file the offline app uses, increase the version number in the `CACHE` name at the top of `sw.js`. Installed apps then fetch the new files on their next visit while online.
+
+## Maintenance notes
+
+- **Adding or removing a Schengen country:** update `COUNTRIES` in `js/calc.js`, add a color scheme in `js/scheme.js`, and rebuild the map. The tests fail if a country is missing from the map or the schemes.
+- **Rebuilding the map:**
+
+  ```bash
+  cd tools && npm install && node build-map.js
+  ```
+
+  Then replace the SVG between the `MAP START` and `MAP END` comments in `index.html` with `tools/europe-map.svg`.
+- **Map data:** Natural Earth (public domain), through the `world-atlas` package.
+
+## Disclaimer
+
+This tool provides general information only and is not legal advice. Official border authorities make the final determination of a traveler's permitted stay.
+
+© All Trips Considered. All rights reserved.
