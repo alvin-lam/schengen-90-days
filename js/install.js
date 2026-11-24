@@ -21,6 +21,9 @@
   }
 
   var banner = document.getElementById("install-banner");
+  // Called when a download could not happen: show the banner with steps for
+  // this browser, even if the visitor dismissed it earlier.
+  window.SchengenInstall = { remind: function () {} };
   if (!banner || inFrame) return;
 
   var hint = document.getElementById("install-hint");
@@ -84,6 +87,27 @@
   });
 
   window.addEventListener("appinstalled", hide);
+
+  var D = window.SchengenDevice || {};
+  window.SchengenInstall.remind = function () {
+    if (isStandalone()) return;
+    if (D.inAppBrowser) {
+      acceptBtn.hidden = true;
+      hint.innerHTML = 'Open this page in <strong>Safari or Chrome</strong> (use this app\'s menu, then <strong>Open in browser</strong>), then add it to your Home Screen.';
+    } else if (deferredPrompt) {
+      acceptBtn.hidden = false;
+      hint.textContent = "Install the calculator to save files and open it like an app, even offline.";
+    } else if (D.isIOS) {
+      acceptBtn.hidden = true;
+      hint.innerHTML = 'Tap the Share button <span class="share-glyph" aria-hidden="true"></span>, then choose <strong>Add to Home Screen</strong>.';
+    } else {
+      acceptBtn.hidden = true;
+      hint.innerHTML = 'Open your browser menu, then choose <strong>Add to Home Screen</strong> or <strong>Install app</strong>.';
+    }
+    banner.hidden = false;
+    document.body.classList.add("has-install-banner");
+    syncBannerHeight();
+  };
 
   // iPhone and iPad (iPadOS reports itself as a Mac with touch support).
   var ua = navigator.userAgent || "";

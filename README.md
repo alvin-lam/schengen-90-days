@@ -38,6 +38,7 @@ A free web app from [All Trips Considered](https://alltripsconsidered.com) that 
 ### App and offline use
 - The site can be installed as a home screen app. Chrome, Edge, and Android show an Install button. iPhone and iPad show the Share > Add to Home Screen steps.
 - The installed app works offline.
+- Browsers that cannot save files, such as the built-in browsers in Instagram, Facebook, TikTok, and LinkedIn, show a note beside each Download button. Tapping Download there opens the Add to Home Screen banner with steps for that browser, for example opening the page in Safari or Chrome first.
 - Desktop and phone layouts are both supported, along with a back to top button and keyboard navigation for all menus.
 
 ## Saved data
@@ -70,6 +71,7 @@ js/export.js           CSV, JSON, and TXT export
 js/app.js              Page behavior: trips, map, downloads, sharing, menus
 js/theme.js            Auto, Light, and Dark mode (loaded in <head>)
 js/scheme.js           Applies the flag color schemes (loaded in <head>)
+js/device.js           Detects in-app browsers and whether files can be saved
 js/install.js          Add to Home Screen prompt and service worker setup
 sw.js                  Service worker for offline use (must stay at the root)
 manifest.webmanifest   App name, colors, and icons for installing

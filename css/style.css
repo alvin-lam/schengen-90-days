@@ -236,7 +236,9 @@ input[type="date"], select {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
-  min-height: 42px;
+  /* One fixed height for every field and button so rows line up
+     (browsers draw date fields taller than dropdowns by default). */
+  height: 44px;
   width: 100%;
   min-width: 0;
 }
@@ -252,7 +254,7 @@ input:focus, select:focus, .btn:focus-visible {
   font-weight: 600;
   border-radius: 8px;
   padding: 8px 14px;
-  min-height: 40px;
+  min-height: 44px;
   cursor: pointer;
   border: 1px solid transparent;
 }
@@ -276,14 +278,15 @@ input:focus, select:focus, .btn:focus-visible {
 .trip:first-child { border-top: 0; padding-top: 0; }
 .trip .field:first-child { grid-column: 1 / -1; }
 .trip .field-label { font-size: .85rem; color: var(--muted); }
+/* Same structure as the date fields: label on top, then a 44px row,
+   so the label and the number line up with the fields beside them. */
 .trip-days {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 42px;
+  gap: 4px;
   font-variant-numeric: tabular-nums;
 }
-.trip-days-value { font-weight: 700; }
+.trip-days-value { display: flex; align-items: center; height: 44px; font-weight: 700; }
 .trip-error { grid-column: 1 / -1; color: var(--red); margin: 0; font-size: .9rem; }
 .trip.invalid input { border-color: var(--red); }
 .empty { color: var(--muted); text-align: center; padding: 16px 0; margin: 0; }
@@ -375,6 +378,22 @@ input:focus, select:focus, .btn:focus-visible {
 .share-menu a[role="menuitem"] { text-decoration: none; }
 .format-menu.share-menu { max-height: min(460px, 70vh); overflow-y: auto; }
 .map-download-row { gap: 10px; }
+
+/* Shown next to Download buttons when this browser cannot save files */
+.download-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--yellow-bg);
+  color: var(--text);
+  font-size: .9rem;
+}
+.download-note-text { flex: 1 1 220px; margin: 0; }
+.download-note[hidden] { display: none; }
 
 /* Europe map */
 .map-wrap { max-width: 520px; margin: 0 auto; }
@@ -546,7 +565,8 @@ body.has-install-banner { padding-bottom: var(--install-banner-height, 140px); }
 /* Very small phones: stack the two date fields so full dates stay visible. */
 @media (max-width: 360px) {
   .trip { grid-template-columns: minmax(0, 1fr); }
-  .trip-days { flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 8px; min-height: 0; }
+  .trip-days { flex-direction: row; align-items: center; gap: 8px; }
+  .trip-days-value { height: auto; }
   .card-footer .btn { flex-basis: 100%; }
 }
 

@@ -371,11 +371,39 @@
     var out = currentExport(format);
     // A byte order mark helps Excel read accented and non-Latin country names in CSV files.
     var body = out.format === "csv" ? "\uFEFF" + out.text : out.text;
-    downloadBlob(new Blob([body], { type: out.mime }), out.name);
-    showExportStatus("Downloaded " + out.name + ".");
+    if (downloadBlob(new Blob([body], { type: out.mime }), out.name)) {
+      showExportStatus("Downloaded " + out.name + ".");
+    }
   });
 
+  /*
+   * Save a file. Returns false (and explains what to do) when this browser
+   * cannot save files, so callers never report a download that did not happen.
+   */
+  var D = window.SchengenDevice;
+  var DOWNLOAD_HELP = D.inAppBrowser
+    ? "This in-app browser can't save files. Open this page in Safari or Chrome to download, then add it to your Home Screen for one-tap access."
+    : "This browser can't save files. Add this page to your Home Screen, then download from there.";
+
+  function remindHomeScreen() {
+    if (window.SchengenInstall) window.SchengenInstall.remind();
+  }
+
+  // Point out the limit next to each Download button before anyone taps it.
+  if (!D.canDownload) {
+    Array.prototype.forEach.call(document.querySelectorAll(".download-note"), function (note) {
+      note.querySelector(".download-note-text").textContent = DOWNLOAD_HELP;
+      note.querySelector(".download-note-button").addEventListener("click", remindHomeScreen);
+      note.hidden = false;
+    });
+  }
+
   function downloadBlob(blob, name) {
+    if (!D.canDownload) {
+      // The note beside the button already explains why; show the steps.
+      remindHomeScreen();
+      return false;
+    }
     var url = URL.createObjectURL(blob);
     var link = document.createElement("a");
     link.href = url;
@@ -384,6 +412,7 @@
     link.click();
     link.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    return true;
   }
 
   // Download the map as SVG, PNG, or JPG, in the colors currently on screen.
@@ -515,13 +544,13 @@
   setupFormatMenu("map-download", "map-menu", function (format) {
     var name = mapFileName(format);
     if (format === "svg") {
-      downloadBlob(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + framedSvg(standaloneMapSvg())], { type: "image/svg+xml" }), name);
-      showMapStatus("Downloaded " + name + ".");
+      if (downloadBlob(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + framedSvg(standaloneMapSvg())], { type: "image/svg+xml" }), name)) {
+        showMapStatus("Downloaded " + name + ".");
+      }
       return;
     }
     mapImageBlob(format).then(function (blob) {
-      downloadBlob(blob, name);
-      showMapStatus("Downloaded " + name + ".");
+      if (downloadBlob(blob, name)) showMapStatus("Downloaded " + name + ".");
     }, function () { showMapStatus("This browser could not create the image. Try SVG instead."); });
   });
 
@@ -613,7 +642,7 @@
       if (choice === "instagram") {
         // Instagram only accepts posts from its app, so save the image and copy the caption.
         mapImageBlob("png").then(function (blob) {
-          downloadBlob(blob, mapFileName("png"));
+          if (!downloadBlob(blob, mapFileName("png"))) return;
           var caption = shareText() + " " + SHARE_URL;
           var msg = "Map image saved. Post it from the Instagram app";
           if (navigator.clipboard && navigator.clipboard.writeText) {
