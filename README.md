@@ -41,6 +41,11 @@ A free web app from [All Trips Considered](https://alltripsconsidered.com) that 
 - Browsers that cannot save files, such as the built-in browsers in Instagram, Facebook, TikTok, and LinkedIn, show a note beside each Download button. Tapping Download there opens the Add to Home Screen banner with steps for that browser, for example opening the page in Safari or Chrome first.
 - Desktop and phone layouts are both supported, along with a back to top button and keyboard navigation for all menus.
 
+### Footer
+- Notes on how days are counted and that the tool is not legal advice.
+- **Rules last checked:** the date the Schengen rules were last reviewed, why Cyprus, Ireland, and the microstates (Andorra, Monaco, San Marino, Vatican City) are not in the country list, and a note about the EU Entry/Exit System.
+- A link to the privacy page and the copyright line for All Trips Considered.
+
 ## Saved data
 
 Trips are saved in the browser under the key `schengen-90-180-trips`:
@@ -99,7 +104,7 @@ Then visit http://localhost:8000. Use a local server rather than opening `index.
 node --test tests/calc.test.js
 ```
 
-The tests cover the 180-day window, the status levels, overlapping trips, every export format, and checks that every Schengen country appears on the map and has a color scheme.
+The tests cover the 180-day window, the status levels, overlapping trips, every export format, upgrading older saved trips (including damaged data), unique country codes, and checks that every Schengen country appears on the map and has a color scheme.
 
 ## Publishing
 
@@ -158,9 +163,16 @@ These need the site owner's accounts or approval.
 
 - [ ] **Review the Schengen rules every few months.** Check the member list (Cyprus is working toward joining), the Entry/Exit System, and related rules. Update `js/countries.js` if membership changes, and update the "Rules last checked" date in the footer of `index.html`.
 
+### Considered and set aside
+
+- **Sign in with Apple or Google, with iCloud or Google Drive sync.** Reviewed in November 2026 and not pursued for now. Google Drive sync would need a Google Cloud project and Google's review of the app's name and logo, and sign-in does not work in in-app browsers. iCloud sync would need the Apple Developer Program ($99 per year) and CloudKit JS, which gets limited support for the web. Either would also replace the "no accounts" promise in the privacy page. If cloud storage comes up again, the simplest path is Import plus the phone's own Save to Files, which already reaches iCloud Drive and Google Drive with no sign-in.
+
 ### Done
 
 - [x] Privacy page (`privacy.html`), linked from the footer
+- [x] Dates, times, and numbers shown in the device's own format
+- [x] Fields and buttons aligned at every screen width, and an Add to Home Screen reminder where downloads are blocked
+- [x] One shared country list (`js/countries.js`) and versioned saved data with automatic upgrades
 - [x] Old feature branches deleted on GitHub; only `claude/peaceful-rubin-dyhyh5` and `prod` remain
 - [x] "Rules last checked" note explaining which countries are not included and the Entry/Exit System
 
