@@ -134,6 +134,7 @@
     document.getElementById("meter-fill").style.width = Math.min(result.total / 90, 1) * 100 + "%";
 
     updateMap();
+    if (typeof updateShareLinks === "function") { updateShareLinks(); prepareShareFile(); }
 
     var hasTrips = trips.length > 0;
     document.getElementById("export-download").disabled = !hasTrips;
@@ -464,32 +465,131 @@
     return canvas;
   }
 
+  // Build the framed map image as a Blob (PNG or JPG).
+  function mapImageBlob(format) {
+    return new Promise(function (resolve, reject) {
+      var map = standaloneMapSvg();
+      var url = URL.createObjectURL(new Blob([map.text], { type: "image/svg+xml" }));
+      var img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        // Make sure the title font is ready before writing text onto the image.
+        var fontsReady = document.fonts && document.fonts.load ? document.fonts.load('46px "Instrument Serif"').catch(function () {}) : Promise.resolve();
+        fontsReady.then(function () {
+          drawFramed(map, img).toBlob(function (blob) {
+            if (blob) resolve(blob); else reject(new Error("no image"));
+          }, format === "jpg" ? "image/jpeg" : "image/png", 0.92);
+        });
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("no image")); };
+      img.src = url;
+    });
+  }
+
+  function mapFileName(format) {
+    return "schengen-map-" + (referenceInput.value || C.todayIso()) + "." + format;
+  }
+
   setupFormatMenu("map-download", "map-menu", function (format) {
-    var map = standaloneMapSvg();
-    var name = "schengen-map-" + (referenceInput.value || C.todayIso()) + "." + format;
+    var name = mapFileName(format);
     if (format === "svg") {
-      downloadBlob(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + framedSvg(map)], { type: "image/svg+xml" }), name);
+      downloadBlob(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + framedSvg(standaloneMapSvg())], { type: "image/svg+xml" }), name);
       showMapStatus("Downloaded " + name + ".");
       return;
     }
-    function fail() { showMapStatus("This browser could not create the image. Try SVG instead."); }
-    var url = URL.createObjectURL(new Blob([map.text], { type: "image/svg+xml" }));
-    var img = new Image();
-    img.onload = function () {
-      URL.revokeObjectURL(url);
-      // Make sure the title font is ready before writing text onto the image.
-      var fontsReady = document.fonts && document.fonts.load ? document.fonts.load('46px "Instrument Serif"').catch(function () {}) : Promise.resolve();
-      fontsReady.then(function () {
-        drawFramed(map, img).toBlob(function (blob) {
-          if (!blob) { fail(); return; }
-          downloadBlob(blob, name);
-          showMapStatus("Downloaded " + name + ".");
-        }, format === "jpg" ? "image/jpeg" : "image/png", 0.92);
-      });
-    };
-    img.onerror = function () { URL.revokeObjectURL(url); fail(); };
-    img.src = url;
+    mapImageBlob(format).then(function (blob) {
+      downloadBlob(blob, name);
+      showMapStatus("Downloaded " + name + ".");
+    }, function () { showMapStatus("This browser could not create the image. Try SVG instead."); });
   });
+
+  /*
+   * Share map.
+   * Phones (and browsers that can share files) open the device share sheet
+   * with the map image attached. Other browsers get a menu of social links
+   * that share the site address with a short message.
+   */
+  var SHARE_URL = "https://" + SITE_URL + "/";
+  var shareButton = document.getElementById("share-map");
+  var shareMenu = document.getElementById("share-menu");
+
+  function shareText() {
+    var reference = referenceInput.value || C.todayIso();
+    var total = C.daysInWindow(trips, reference).total;
+    var countries = {};
+    trips.forEach(function (t) { if (t.country) countries[t.country] = true; });
+    var n = Object.keys(countries).length;
+    if (!trips.length || !n) return "Check your Schengen 90/180 days with this free calculator.";
+    return "My Schengen map: " + n + (n === 1 ? " country" : " countries") + ", " + total + " of 90 days used in the last 180 days. Check yours:";
+  }
+
+  function canShareFiles() {
+    try {
+      return !!(navigator.share && navigator.canShare &&
+        navigator.canShare({ files: [new File([""], "map.png", { type: "image/png" })] }));
+    } catch (e) { return false; }
+  }
+
+  // Keep the social links current with the visitor's numbers.
+  function updateShareLinks() {
+    var text = shareText();
+    var links = {
+      x: "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent(SHARE_URL),
+      facebook: "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(SHARE_URL),
+      linkedin: "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(SHARE_URL),
+      whatsapp: "https://wa.me/?text=" + encodeURIComponent(text + " " + SHARE_URL)
+    };
+    Object.keys(links).forEach(function (k) {
+      shareMenu.querySelector('[data-format="' + k + '"]').setAttribute("href", links[k]);
+    });
+  }
+
+  // Prepare the image ahead of time so the share sheet opens right away
+  // (some phones only allow sharing straight after a tap).
+  var shareFile = null;
+  var shareTimer = null;
+  function prepareShareFile() {
+    if (!canShareFiles()) return;
+    clearTimeout(shareTimer);
+    shareFile = null;
+    shareTimer = setTimeout(function () {
+      mapImageBlob("png").then(function (blob) {
+        shareFile = new File([blob], mapFileName("png"), { type: "image/png" });
+      }, function () {});
+    }, 500);
+  }
+
+  function nativeShare() {
+    var go = function (file) {
+      return navigator.share({ files: [file], title: "My Schengen map", text: shareText() + " " + SHARE_URL });
+    };
+    var pending = shareFile ? go(shareFile) : mapImageBlob("png").then(function (blob) {
+      shareFile = new File([blob], mapFileName("png"), { type: "image/png" });
+      return go(shareFile);
+    });
+    pending.catch(function (err) {
+      if (err && err.name === "AbortError") return; // the visitor closed the share sheet
+      showMapStatus("Sharing did not open. Tap Share map again, or use Download map.");
+    });
+  }
+
+  if (canShareFiles()) {
+    // Use the device share sheet: no menu needed.
+    shareButton.removeAttribute("aria-haspopup");
+    shareButton.removeAttribute("aria-controls");
+    shareButton.removeAttribute("aria-expanded");
+    shareButton.querySelector(".menu-chevron").remove();
+    shareMenu.remove();
+    shareButton.addEventListener("click", nativeShare);
+  } else {
+    setupFormatMenu("share-map", "share-menu", function (choice) {
+      if (choice !== "copy") return; // social links open in a new tab on their own
+      function done(ok) { showMapStatus(ok ? "Link copied: " + SHARE_URL : "Copy this link: " + SHARE_URL); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(SHARE_URL).then(function () { done(true); }, function () { done(false); });
+      } else { done(false); }
+    });
+  }
 
   // Back to top: appears after scrolling down, returns to the top of the page.
   var topButton = document.getElementById("back-to-top");

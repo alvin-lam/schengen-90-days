@@ -367,6 +367,12 @@ input:focus, select:focus, .btn:focus-visible {
 .scheme-swatch { display: flex; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px var(--border); }
 .scheme-swatch i { width: 9px; height: 14px; }
 
+/* Share map */
+.share-button { color: var(--text); border-color: var(--border); }
+.share-icon { flex: none; }
+.share-menu a[role="menuitem"] { text-decoration: none; }
+.map-download-row { gap: 10px; }
+
 /* Europe map */
 .map-wrap { max-width: 520px; margin: 0 auto; }
 .europe-map { display: block; width: 100%; height: auto; background: var(--map-sea); border-radius: 10px; }
@@ -518,6 +524,7 @@ body.has-install-banner { padding-bottom: var(--install-banner-height, 140px); }
   .map-side .map-summary { text-align: left; }
   .map-side .map-download-row { flex-direction: column; align-items: stretch; }
   .map-side .menu-wrap { margin-left: 0; }
+  .map-side .map-download-row { gap: 10px; }
   .map-side .menu-button { width: 100%; justify-content: center; }
   .map-side .format-menu { left: 0; right: 0; }
 }
