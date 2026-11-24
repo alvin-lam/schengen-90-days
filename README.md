@@ -58,12 +58,14 @@ The page shows dates, times, and numbers in the visitor's device format (languag
 
 ## Privacy
 
-Trips, the chosen mode, and the color scheme are saved only in the visitor's browser (`localStorage`). Nothing is uploaded. Exported and downloaded files are created on the device. Sharing sends only what the visitor chooses to share.
+See [`privacy.html`](privacy.html), linked from the page footer. Trips, the chosen mode, and the color scheme are saved only in the visitor's browser (`localStorage`). Nothing is uploaded. Exported and downloaded files are created on the device. Sharing sends only what the visitor chooses to share.
 
 ## Project layout
 
 ```
 index.html             The page, including the inline Europe map
+privacy.html           Privacy page, linked from the footer
+ROADMAP.md             Planned work and owner tasks
 css/style.css          All styles, with light and dark color tokens
 js/countries.js        The one list of Schengen countries: codes, names, flags, colors
 js/calc.js             Day counting rules, status levels, saved-data upgrades
@@ -131,6 +133,10 @@ When changing any file the offline app uses, increase the version number in the 
   Then replace the SVG between the `MAP START` and `MAP END` comments in `index.html` with `tools/europe-map.svg`.
 - **Search engines:** the page title, description, canonical address, share image (`icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `index.html`. Update `lastmod` in `sitemap.xml` after major changes.
 - **Map data:** Natural Earth (public domain), through the `world-atlas` package.
+
+## Roadmap
+
+Planned work and owner tasks are listed in [ROADMAP.md](ROADMAP.md).
 
 ## Disclaimer
 

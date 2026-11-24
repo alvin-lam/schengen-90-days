@@ -436,6 +436,10 @@ input:focus, select:focus, .btn:focus-visible {
 
 .disclaimer { color: var(--muted); font-size: .85rem; }
 .disclaimer p { margin: 0 0 6px; }
+.rules-note { margin-top: 12px !important; }
+.footer-links { margin-top: 12px !important; text-align: center; }
+.footer-links a { color: var(--brand-link); font-weight: 600; text-decoration: none; }
+.footer-links a:hover { text-decoration: underline; }
 .footer-icon { display: block; width: 75px; height: 75px; margin: 24px auto 0; }
 /* One blank line (1.5em = the footer line height) between the icon and the copyright. */
 .copyright {
