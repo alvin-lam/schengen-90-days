@@ -12,7 +12,7 @@ const path = require("path");
 const d3 = require("d3-geo");
 const topojson = require("topojson-client");
 const simplify = require("topojson-simplify");
-const { SCHENGEN_COUNTRIES } = require("../js/calc.js");
+const K = require("../js/countries.js");
 
 const WIDTH = 800;
 const DETAIL = 0.15; // topojson quantile: lower keeps fewer points (smaller file, rougher coasts)
@@ -25,7 +25,7 @@ const countries = topojson.feature(simplified, simplified.objects.countries).fea
 
 // Map data names that differ from the page's country list.
 const ALIAS = { "Åland": "Finland" };
-const schengen = new Set(SCHENGEN_COUNTRIES);
+const schengen = new Set(K.COUNTRIES.map((c) => c.name));
 
 // Frame the Schengen Area: Iceland to Finland, Portugal to Crete.
 const frame = { type: "MultiPoint", coordinates: [[-24.5, 66.5], [-9.6, 36.8], [26, 34.6], [31.5, 70.2], [25, 71.2], [30, 45]] };
@@ -59,7 +59,7 @@ for (const f of countries) {
   const d = pathGen(trim(f));
   if (!d) continue;
   if (schengen.has(name)) {
-    members.push(`<path class="map-country" data-country="${esc(name)}" d="${d}"><title>${esc(name)}</title></path>`);
+    members.push(`<path class="map-country" data-country="${K.byName(name).code}" d="${d}"><title>${esc(name)}</title></path>`);
   } else {
     context.push(`<path d="${d}"/>`);
   }
@@ -69,7 +69,7 @@ for (const f of countries) {
 const DOTS = { Liechtenstein: [9.55, 47.15], Luxembourg: [6.13, 49.78], Malta: [14.4, 35.92] };
 const dots = Object.entries(DOTS).map(([name, lonlat]) => {
   const [x, y] = projection(lonlat).map((v) => v.toFixed(1));
-  return `<circle class="map-country map-dot" data-country="${name}" cx="${x}" cy="${y}" r="4"><title>${name}</title></circle>`;
+  return `<circle class="map-country map-dot" data-country="${K.byName(name).code}" cx="${x}" cy="${y}" r="4"><title>${name}</title></circle>`;
 });
 
 const svg = [

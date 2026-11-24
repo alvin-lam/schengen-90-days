@@ -58,8 +58,8 @@ test("every country has a native name and a flag", () => {
 
 const X = require("../js/export.js");
 const sampleTrips = [
-  { country: "Germany", entry: "2026-06-01", exit: "2026-06-10" },
-  { country: "Belgium", entry: "2026-07-01", exit: "2026-07-05" }
+  { country: "DE", entry: "2026-06-01", exit: "2026-06-10" },
+  { country: "BE", entry: "2026-07-01", exit: "2026-07-05" }
 ];
 const sampleRecord = X.buildRecord(sampleTrips, "2026-11-16", new Date("2026-11-16T12:00:00Z"));
 
@@ -100,7 +100,7 @@ test("file names use the check date", () => {
 test("the map has a shape for every Schengen country", () => {
   const html = require("fs").readFileSync(require("path").join(__dirname, "..", "index.html"), "utf8");
   const onMap = new Set([...html.matchAll(/class="map-country[^"]*" data-country="([^"]+)"/g)].map((m) => m[1]));
-  const missing = C.SCHENGEN_COUNTRIES.filter((c) => !onMap.has(c));
+  const missing = C.COUNTRIES.map((c) => c.code).filter((code) => !onMap.has(code));
   assert.deepStrictEqual(missing, []);
 });
 
@@ -108,7 +108,7 @@ test("every Schengen country has a color scheme", () => {
   global.localStorage = undefined;
   const fake = { documentElement: { style: { setProperty() {}, removeProperty() {} }, setAttribute() {} }, querySelector() { return null; } };
   global.document = fake;
-  const ctx = {};
+  const ctx = { SchengenCountries: require("../js/countries.js") };
   new Function(require("fs").readFileSync(require("path").join(__dirname, "..", "js", "scheme.js"), "utf8")).call(ctx);
   const names = ctx.SchengenScheme.SCHEMES.map((s) => s.name);
   assert.deepStrictEqual(C.SCHENGEN_COUNTRIES.filter((c) => !names.includes(c)), []);
@@ -117,4 +117,42 @@ test("every Schengen country has a color scheme", () => {
     [s.primary, s.map, ...s.stripe].filter(Boolean).forEach((c) => assert.match(c, /^#[0-9A-F]{6}$/i, s.name));
   });
   delete global.document;
+});
+
+test("export record includes the country code", () => {
+  assert.strictEqual(sampleRecord.trips[0].country, "Germany");
+  assert.strictEqual(sampleRecord.trips[0].countryCode, "DE");
+});
+
+test("upgrade: old saved trips with English names become codes with ids", () => {
+  const old = [
+    { country: "Germany", entry: "2026-06-01", exit: "2026-06-10" },
+    { country: "Czechia", entry: "2026-07-01", exit: "2026-07-02" },
+    { country: "", entry: "2026-08-01", exit: "" }
+  ];
+  const up = C.upgradeSaved(old);
+  assert.strictEqual(up.version, 2);
+  assert.deepStrictEqual(up.trips.map((t) => t.country), ["DE", "CZ", ""]);
+  assert.deepStrictEqual(up.trips.map((t) => t.entry), ["2026-06-01", "2026-07-01", "2026-08-01"]);
+  up.trips.forEach((t) => assert.match(t.id, /^t[a-z0-9]+$/));
+  assert.strictEqual(new Set(up.trips.map((t) => t.id)).size, 3);
+  // Counting gives the same answer before and after the upgrade.
+  assert.strictEqual(C.daysInWindow(up.trips, "2026-11-24").total, C.daysInWindow(old, "2026-11-24").total);
+});
+
+test("upgrade: current data is kept as is", () => {
+  const cur = { version: 2, trips: [{ id: "tabc", country: "FR", entry: "2026-05-01", exit: "2026-05-03" }] };
+  assert.deepStrictEqual(C.upgradeSaved(cur), cur);
+});
+
+test("upgrade: unknown or broken data never throws", () => {
+  assert.deepStrictEqual(C.upgradeSaved(null).trips, []);
+  assert.deepStrictEqual(C.upgradeSaved("nonsense").trips, []);
+  assert.deepStrictEqual(C.upgradeSaved([null, 5, { country: "Atlantis" }]).trips.map((t) => t.country), [""]);
+});
+
+test("countries: codes are unique two-letter ISO codes", () => {
+  const codes = C.COUNTRIES.map((c) => c.code);
+  assert.strictEqual(new Set(codes).size, 29);
+  codes.forEach((c) => assert.match(c, /^[A-Z]{2}$/));
 });

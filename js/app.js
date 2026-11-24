@@ -12,19 +12,25 @@
   var trips = loadTrips();
   referenceInput.value = C.todayIso();
 
+  // Saved data: { version: 2, trips: [{ id, country: "DE", entry, exit }] }.
+  // Older saves are upgraded once on load (see upgradeSaved in calc.js).
   function loadTrips() {
+    var data;
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      var parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      data = C.upgradeSaved(raw ? JSON.parse(raw) : []);
     } catch (e) {
       return [];
     }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) { /* storage unavailable */ }
+    return data.trips;
   }
 
   function saveTrips() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: C.DATA_VERSION, trips: trips }));
     } catch (e) {
       /* Storage may be unavailable; the app still works for this visit. */
     }
@@ -37,7 +43,7 @@
     select.appendChild(placeholder);
     C.COUNTRIES.forEach(function (country) {
       var opt = document.createElement("option");
-      opt.value = country.name;
+      opt.value = country.code;
       opt.textContent = C.countryLabel(country);
       select.appendChild(opt);
     });
@@ -149,7 +155,7 @@
     Array.prototype.forEach.call(document.querySelectorAll("#europe-map .map-country"), function (el) {
       el.classList.toggle("visited", !!chosen[el.getAttribute("data-country")]);
     });
-    var names = C.SCHENGEN_COUNTRIES.filter(function (n) { return chosen[n]; });
+    var names = C.COUNTRIES.filter(function (c) { return chosen[c.code]; }).map(function (c) { return c.name; });
     var summary = document.getElementById("map-summary");
     summary.textContent = names.length ? "In your trips (" + names.length + "): " + names.join(", ") : "";
     summary.hidden = !names.length;
@@ -161,7 +167,7 @@
   }
 
   document.getElementById("add-trip").addEventListener("click", function () {
-    trips.push({ country: "", entry: "", exit: "" });
+    trips.push({ id: C.newTripId(), country: "", entry: "", exit: "" });
     saveTrips();
     renderTrips();
     var last = tripList.lastElementChild;

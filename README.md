@@ -40,6 +40,17 @@ A free web app from [All Trips Considered](https://alltripsconsidered.com) that 
 - The installed app works offline.
 - Desktop and phone layouts are both supported, along with a back to top button and keyboard navigation for all menus.
 
+## Saved data
+
+Trips are saved in the browser under the key `schengen-90-180-trips`:
+
+```json
+{ "version": 2,
+  "trips": [{ "id": "t1abc", "country": "DE", "entry": "2026-06-01", "exit": "2026-06-10" }] }
+```
+
+Countries are stored by ISO code, never by name. Older saves (version 1, a plain list with English country names) are upgraded automatically the first time a visitor opens the new version. If the format changes again, raise `DATA_VERSION` in `js/calc.js` and extend `upgradeSaved` so existing trips carry over.
+
 ## Privacy
 
 Trips, the chosen mode, and the color scheme are saved only in the visitor's browser (`localStorage`). Nothing is uploaded. Exported and downloaded files are created on the device. Sharing sends only what the visitor chooses to share.
@@ -49,11 +60,12 @@ Trips, the chosen mode, and the color scheme are saved only in the visitor's bro
 ```
 index.html             The page, including the inline Europe map
 css/style.css          All styles, with light and dark color tokens
-js/calc.js             Day counting rules, country list, status levels
+js/countries.js        The one list of Schengen countries: codes, names, flags, colors
+js/calc.js             Day counting rules, status levels, saved-data upgrades
 js/export.js           CSV, JSON, and TXT export
 js/app.js              Page behavior: trips, map, downloads, sharing, menus
 js/theme.js            Auto, Light, and Dark mode (loaded in <head>)
-js/scheme.js           Flag color schemes (loaded in <head>)
+js/scheme.js           Applies the flag color schemes (loaded in <head>)
 js/install.js          Add to Home Screen prompt and service worker setup
 sw.js                  Service worker for offline use (must stay at the root)
 manifest.webmanifest   App name, colors, and icons for installing
@@ -90,7 +102,7 @@ When changing any file the offline app uses, increase the version number in the 
 
 ## Maintenance notes
 
-- **Adding or removing a Schengen country:** update `COUNTRIES` in `js/calc.js`, add a color scheme in `js/scheme.js`, and rebuild the map. The tests fail if a country is missing from the map or the schemes.
+- **Adding or removing a Schengen country:** edit `js/countries.js` (code, names, flag, and colors in one place), then rebuild the map. The tests fail if a country is missing from the map, has no colors, or has a bad code. Never change an existing country's code, since saved trips use it.
 - **Rebuilding the map:**
 
   ```bash

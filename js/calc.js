@@ -9,39 +9,10 @@
   var MS_PER_DAY = 24 * 60 * 60 * 1000;
   var WINDOW_DAYS = 180;
 
-  // Schengen Area members (29 countries as of 2025), with the name used
-  // in each country's own official language(s) and its flag emoji.
-  var COUNTRIES = [
-    { name: "Austria", native: "Österreich", flag: "🇦🇹" },
-    { name: "Belgium", native: "België / Belgique / Belgien", flag: "🇧🇪" },
-    { name: "Bulgaria", native: "България", flag: "🇧🇬" },
-    { name: "Croatia", native: "Hrvatska", flag: "🇭🇷" },
-    { name: "Czechia", native: "Česko", flag: "🇨🇿" },
-    { name: "Denmark", native: "Danmark", flag: "🇩🇰" },
-    { name: "Estonia", native: "Eesti", flag: "🇪🇪" },
-    { name: "Finland", native: "Suomi", flag: "🇫🇮" },
-    { name: "France", native: "France", flag: "🇫🇷" },
-    { name: "Germany", native: "Deutschland", flag: "🇩🇪" },
-    { name: "Greece", native: "Ελλάδα", flag: "🇬🇷" },
-    { name: "Hungary", native: "Magyarország", flag: "🇭🇺" },
-    { name: "Iceland", native: "Ísland", flag: "🇮🇸" },
-    { name: "Italy", native: "Italia", flag: "🇮🇹" },
-    { name: "Latvia", native: "Latvija", flag: "🇱🇻" },
-    { name: "Liechtenstein", native: "Liechtenstein", flag: "🇱🇮" },
-    { name: "Lithuania", native: "Lietuva", flag: "🇱🇹" },
-    { name: "Luxembourg", native: "Lëtzebuerg", flag: "🇱🇺" },
-    { name: "Malta", native: "Malta", flag: "🇲🇹" },
-    { name: "Netherlands", native: "Nederland", flag: "🇳🇱" },
-    { name: "Norway", native: "Norge", flag: "🇳🇴" },
-    { name: "Poland", native: "Polska", flag: "🇵🇱" },
-    { name: "Portugal", native: "Portugal", flag: "🇵🇹" },
-    { name: "Romania", native: "România", flag: "🇷🇴" },
-    { name: "Slovakia", native: "Slovensko", flag: "🇸🇰" },
-    { name: "Slovenia", native: "Slovenija", flag: "🇸🇮" },
-    { name: "Spain", native: "España", flag: "🇪🇸" },
-    { name: "Sweden", native: "Sverige", flag: "🇸🇪" },
-    { name: "Switzerland", native: "Schweiz / Suisse / Svizzera", flag: "🇨🇭" }
-  ];
+  var K = (typeof module !== "undefined" && module.exports)
+    ? require("./countries.js")
+    : root.SchengenCountries;
+  var COUNTRIES = K.COUNTRIES;
   var SCHENGEN_COUNTRIES = COUNTRIES.map(function (c) { return c.name; });
 
   /** Dropdown label, e.g. "Germany | Deutschland | 🇩🇪". */
@@ -132,7 +103,44 @@
     return exit - entry + 1;
   }
 
+  /* ---------- Saved data ---------- */
+
+  var DATA_VERSION = 2;
+
+  function newTripId() {
+    return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  /**
+   * Bring saved data to the current format.
+   *   Version 1 (before this change): a plain array of trips that stored the
+   *   country's English name, e.g. [{ country: "Germany", entry, exit }].
+   *   Version 2: { version: 2, trips: [{ id, country: "DE", entry, exit }] }.
+   * Unknown countries become "" so the trip is kept and the visitor can pick again.
+   */
+  function upgradeSaved(raw) {
+    var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.trips) ? raw.trips : []);
+    var trips = list.filter(function (t) { return t && typeof t === "object"; }).map(function (t) {
+      var code = "";
+      if (t.country) {
+        var c = K.byCode(t.country) || K.byName(t.country);
+        code = c ? c.code : "";
+      }
+      return {
+        id: typeof t.id === "string" && t.id ? t.id : newTripId(),
+        country: code,
+        entry: typeof t.entry === "string" ? t.entry : "",
+        exit: typeof t.exit === "string" ? t.exit : ""
+      };
+    });
+    return { version: DATA_VERSION, trips: trips };
+  }
+
   var api = {
+    countryByCode: K.byCode,
+    DATA_VERSION: DATA_VERSION,
+    newTripId: newTripId,
+    upgradeSaved: upgradeSaved,
     COUNTRIES: COUNTRIES,
     SCHENGEN_COUNTRIES: SCHENGEN_COUNTRIES,
     countryLabel: countryLabel,

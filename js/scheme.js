@@ -1,48 +1,17 @@
 /*
- * Color schemes based on each Schengen country's flag.
- * Loaded in <head> so a saved scheme applies before the page paints.
- *   primary: buttons and links (dark enough for white text)
- *   map:     shading for countries in the visitor's trips
- *   stripe:  the flag's three colors, shown as a swatch in the scheme list
- * "europe" is the default and keeps the page's original colors.
+ * Color schemes based on each Schengen country's flag. The colors live in
+ * js/countries.js. Loaded in <head> so a saved scheme applies before the
+ * page paints. "europe" is the default and keeps the page's original colors.
  */
 (function (root) {
   "use strict";
 
   var KEY = "schengen-scheme";
   var DEFAULT_THEME_COLOR = "#0a2ea8"; // matches the theme-color meta tag in index.html
-  var SCHEMES = [
-    { id: "europe", name: "Europe", flag: "🇪🇺", primary: null, map: null, stripe: ["#003399", "#FFCC00", "#003399"] },
-    { id: "austria", name: "Austria", flag: "🇦🇹", primary: "#C8102E", map: "#C8102E", stripe: ["#C8102E", "#FFFFFF", "#C8102E"] },
-    { id: "belgium", name: "Belgium", flag: "🇧🇪", primary: "#B3122A", map: "#FDDA24", stripe: ["#1A1A1A", "#FDDA24", "#EF3340"] },
-    { id: "bulgaria", name: "Bulgaria", flag: "🇧🇬", primary: "#00805E", map: "#D62612", stripe: ["#FFFFFF", "#00966E", "#D62612"] },
-    { id: "croatia", name: "Croatia", flag: "🇭🇷", primary: "#171796", map: "#D10000", stripe: ["#FF0000", "#FFFFFF", "#171796"] },
-    { id: "czechia", name: "Czechia", flag: "🇨🇿", primary: "#11457E", map: "#D7141A", stripe: ["#FFFFFF", "#D7141A", "#11457E"] },
-    { id: "denmark", name: "Denmark", flag: "🇩🇰", primary: "#C8102E", map: "#C8102E", stripe: ["#C8102E", "#FFFFFF", "#C8102E"] },
-    { id: "estonia", name: "Estonia", flag: "🇪🇪", primary: "#0063B3", map: "#0072CE", stripe: ["#0072CE", "#1A1A1A", "#FFFFFF"] },
-    { id: "finland", name: "Finland", flag: "🇫🇮", primary: "#002F6C", map: "#002F6C", stripe: ["#FFFFFF", "#002F6C", "#FFFFFF"] },
-    { id: "france", name: "France", flag: "🇫🇷", primary: "#002395", map: "#ED2939", stripe: ["#002395", "#FFFFFF", "#ED2939"] },
-    { id: "germany", name: "Germany", flag: "🇩🇪", primary: "#1A1A1A", map: "#DD0000", stripe: ["#1A1A1A", "#DD0000", "#FFCE00"] },
-    { id: "greece", name: "Greece", flag: "🇬🇷", primary: "#0D5EAF", map: "#0D5EAF", stripe: ["#0D5EAF", "#FFFFFF", "#0D5EAF"] },
-    { id: "hungary", name: "Hungary", flag: "🇭🇺", primary: "#436F4D", map: "#CD2A3E", stripe: ["#CD2A3E", "#FFFFFF", "#436F4D"] },
-    { id: "iceland", name: "Iceland", flag: "🇮🇸", primary: "#02529C", map: "#DC1E35", stripe: ["#02529C", "#FFFFFF", "#DC1E35"] },
-    { id: "italy", name: "Italy", flag: "🇮🇹", primary: "#007A3D", map: "#CD212A", stripe: ["#008C45", "#FFFFFF", "#CD212A"] },
-    { id: "latvia", name: "Latvia", flag: "🇱🇻", primary: "#9E3039", map: "#9E3039", stripe: ["#9E3039", "#FFFFFF", "#9E3039"] },
-    { id: "liechtenstein", name: "Liechtenstein", flag: "🇱🇮", primary: "#002B7F", map: "#CE1126", stripe: ["#002B7F", "#FFD83D", "#CE1126"] },
-    { id: "lithuania", name: "Lithuania", flag: "🇱🇹", primary: "#006A44", map: "#FDB913", stripe: ["#FDB913", "#006A44", "#C1272D"] },
-    { id: "luxembourg", name: "Luxembourg", flag: "🇱🇺", primary: "#0076A8", map: "#EF3340", stripe: ["#EF3340", "#FFFFFF", "#00A3E0"] },
-    { id: "malta", name: "Malta", flag: "🇲🇹", primary: "#CF142B", map: "#CF142B", stripe: ["#FFFFFF", "#CF142B", "#CF142B"] },
-    { id: "netherlands", name: "Netherlands", flag: "🇳🇱", primary: "#21468B", map: "#FF7900", stripe: ["#AE1C28", "#FFFFFF", "#21468B"] },
-    { id: "norway", name: "Norway", flag: "🇳🇴", primary: "#BA0C2F", map: "#00205B", stripe: ["#BA0C2F", "#FFFFFF", "#00205B"] },
-    { id: "poland", name: "Poland", flag: "🇵🇱", primary: "#C8102E", map: "#DC143C", stripe: ["#FFFFFF", "#DC143C", "#DC143C"] },
-    { id: "portugal", name: "Portugal", flag: "🇵🇹", primary: "#006600", map: "#DA291C", stripe: ["#006600", "#DA291C", "#DA291C"] },
-    { id: "romania", name: "Romania", flag: "🇷🇴", primary: "#002B7F", map: "#FCD116", stripe: ["#002B7F", "#FCD116", "#CE1126"] },
-    { id: "slovakia", name: "Slovakia", flag: "🇸🇰", primary: "#0B4EA2", map: "#EE1C25", stripe: ["#FFFFFF", "#0B4EA2", "#EE1C25"] },
-    { id: "slovenia", name: "Slovenia", flag: "🇸🇮", primary: "#005DA4", map: "#ED1C24", stripe: ["#FFFFFF", "#005DA4", "#ED1C24"] },
-    { id: "spain", name: "Spain", flag: "🇪🇸", primary: "#AA151B", map: "#F1BF00", stripe: ["#AA151B", "#F1BF00", "#AA151B"] },
-    { id: "sweden", name: "Sweden", flag: "🇸🇪", primary: "#006AA7", map: "#FECC02", stripe: ["#006AA7", "#FECC02", "#006AA7"] },
-    { id: "switzerland", name: "Switzerland", flag: "🇨🇭", primary: "#DA291C", map: "#DA291C", stripe: ["#DA291C", "#FFFFFF", "#DA291C"] }
-  ];
+  var K = root.SchengenCountries;
+  var SCHEMES = [K.EUROPE].concat(K.COUNTRIES).map(function (c) {
+    return { id: c.code, name: c.name, flag: c.flag, primary: c.colors.primary, map: c.colors.map, stripe: c.colors.stripe };
+  });
 
   // Blend a hex color toward white; used for lighter dark mode versions.
   function tint(hex, amount) {
@@ -79,7 +48,15 @@
   }
 
   function saved() {
-    try { return localStorage.getItem(KEY) || "europe"; } catch (e) { return "europe"; }
+    var v;
+    try { v = localStorage.getItem(KEY) || "europe"; } catch (e) { return "europe"; }
+    // Older saves used lowercase English names ("germany"); upgrade them to codes.
+    if (v !== "europe" && !K.byCode(v)) {
+      var c = K.byName(v);
+      v = c ? c.code : "europe";
+      try { localStorage.setItem(KEY, v); } catch (e) { /* ignore */ }
+    }
+    return v;
   }
 
   function choose(id) {

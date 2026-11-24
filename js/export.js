@@ -11,11 +11,8 @@
 
   var LIMIT = 90;
 
-  function countryInfo(name) {
-    for (var i = 0; i < C.COUNTRIES.length; i++) {
-      if (C.COUNTRIES[i].name === name) return C.COUNTRIES[i];
-    }
-    return null;
+  function countryInfo(code) {
+    return C.countryByCode(code);
   }
 
   /** Gather everything an export needs into one plain object. */
@@ -37,7 +34,8 @@
       trips: trips.map(function (trip, i) {
         var info = countryInfo(trip.country);
         return {
-          country: trip.country || "",
+          country: info ? info.name : "",
+          countryCode: info ? info.code : "",
           nativeName: info ? info.native : "",
           entryDate: trip.entry || "",
           departureDate: trip.exit || "",
