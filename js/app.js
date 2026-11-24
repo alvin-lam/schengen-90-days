@@ -570,7 +570,7 @@
     });
     pending.catch(function (err) {
       if (err && err.name === "AbortError") return; // the visitor closed the share sheet
-      showMapStatus("Sharing did not open. Tap Share map again, or use Download map.");
+      showMapStatus("Sharing did not open. Tap Share again, or use Download.");
     });
   }
 
@@ -595,7 +595,7 @@
               showMapStatus(msg + ". The caption is copied, so you can paste it.");
             }, function () { showMapStatus(msg + "."); });
           } else { showMapStatus(msg + "."); }
-        }, function () { showMapStatus("This browser could not create the image. Use Download map instead."); });
+        }, function () { showMapStatus("This browser could not create the image. Use Download instead."); });
         return;
       }
       if (choice !== "copy") return; // social links open in a new tab on their own
