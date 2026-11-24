@@ -433,7 +433,7 @@
       '<style>@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif&amp;display=swap");</style>' +
       '<rect width="' + w + '" height="' + h + '" fill="' + c.bg + '"/>' +
       '<text x="' + w / 2 + '" y="58" text-anchor="middle" font-family="' + escapeXml(SERIF) + '" font-size="46" fill="' + c.brand + '">All Trips Considered</text>' +
-      '<text x="' + w / 2 + '" y="96" text-anchor="middle" font-family="' + escapeXml(c.sans) + '" font-size="24" font-weight="700" fill="' + c.text + '">Schengen 90/180 Calculator</text>' +
+      '<text x="' + w / 2 + '" y="96" text-anchor="middle" font-family="' + escapeXml(c.sans) + '" font-size="24" font-weight="700" fill="' + c.text + '">Schengen 90/180 Calculator \uD83C\uDDEA\uD83C\uDDFA</text>' +
       '<g transform="translate(0 ' + FRAME.header + ')">' + inner + '</g>' +
       '<text x="' + w / 2 + '" y="' + (h - 22) + '" text-anchor="middle" font-family="' + escapeXml(c.sans) + '" font-size="18" fill="' + c.muted + '">' + SITE_URL + '</text>' +
       '</svg>';
@@ -457,7 +457,7 @@
     ctx.fillText("All Trips Considered", w / 2, 58);
     ctx.fillStyle = c.text;
     ctx.font = "700 24px " + c.sans;
-    ctx.fillText("Schengen 90/180 Calculator", w / 2, 96);
+    ctx.fillText("Schengen 90/180 Calculator \uD83C\uDDEA\uD83C\uDDFA", w / 2, 96);
     ctx.fillStyle = c.muted;
     ctx.font = "18px " + c.sans;
     ctx.fillText(SITE_URL, w / 2, h - 22);
