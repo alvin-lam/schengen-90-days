@@ -22,7 +22,6 @@
   --map-member: #cfd5dd;
   --map-other: #f6f7f9;
   --map-sea: #e6edf7;
-  --stripe-outline: #000000;
   --radius: 12px;
 }
 
@@ -48,7 +47,6 @@
       --map-member: #3f4756;
       --map-other: #2a303a;
       --map-sea: #151a22;
-      --stripe-outline: #ffffff;
       color-scheme: dark;
   }
 }
@@ -74,7 +72,6 @@
     --map-member: #3f4756;
     --map-other: #2a303a;
     --map-sea: #151a22;
-    --stripe-outline: #ffffff;
     color-scheme: dark;
 }
 
@@ -119,14 +116,6 @@ body {
 h1 { font-size: 1.5rem; margin: 0 0 8px; } /* 24px at the default text size, on all screens */
 h2 { font-size: 1.15rem; margin: 0; }
 .lede { color: var(--muted); margin: 0 0 24px; text-align: center; text-wrap: balance; }
-
-/* Flag stripe across the top, in the colors of the chosen scheme */
-.flag-stripe {
-  height: 10px;
-  background: var(--flag-stripe, linear-gradient(90deg, #003399 0 33.4%, #FFCC00 33.4% 66.7%, #003399 66.7% 100%));
-  /* Black outline in light mode, white in dark mode; included in the 10px height. */
-  border: 1px solid var(--stripe-outline);
-}
 
 /* Color scheme and light/dark buttons, upper right corner */
 .top-controls {

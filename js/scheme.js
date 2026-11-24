@@ -3,7 +3,7 @@
  * Loaded in <head> so a saved scheme applies before the page paints.
  *   primary: buttons and links (dark enough for white text)
  *   map:     shading for countries in the visitor's trips
- *   stripe:  flag colors for the thin stripe across the top of the page
+ *   stripe:  the flag's three colors, shown as a swatch in the scheme list
  * "europe" is the default and keeps the page's original colors.
  */
 (function (root) {
@@ -71,8 +71,6 @@
       style.setProperty("--scheme-map", s.map);
       style.setProperty("--scheme-map-dark", tint(s.map, 0.15));
     }
-    var c = s.stripe;
-    style.setProperty("--flag-stripe", "linear-gradient(90deg, " + c[0] + " 0 33.4%, " + c[1] + " 33.4% 66.7%, " + c[2] + " 66.7% 100%)");
     document.documentElement.setAttribute("data-scheme", s.id);
     // Browser toolbar and installed app title bar follow the scheme too.
     var meta = document.querySelector('meta[name="theme-color"]');
