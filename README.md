@@ -37,6 +37,7 @@ A free web app from [All Trips Considered](https://alltripsconsidered.com) that 
 
 ### App and offline use
 - The site can be installed as a home screen app. Chrome, Edge, and Android show an Install button. iPhone and iPad show the Share > Add to Home Screen steps.
+- The Add to Home Screen banner has a **Close** button that hides it for 24 hours.
 - The installed app works offline.
 - Browsers that cannot save files, such as the built-in browsers in Instagram, Facebook, TikTok, and LinkedIn, show a note beside each Download button. Tapping Download there opens the Add to Home Screen banner with steps for that browser, for example opening the page in Safari or Chrome first.
 - Desktop and phone layouts are both supported, along with a back to top button and keyboard navigation for all menus.

@@ -8,7 +8,7 @@
   "use strict";
 
   var DISMISS_KEY = "schengen-install-dismissed";
-  var DISMISS_DAYS = 30;
+  var DISMISS_HOURS = 24; // Close hides the banner for this long
 
   var inFrame;
   try { inFrame = window.self !== window.top; } catch (e) { inFrame = true; }
@@ -39,7 +39,7 @@
   function recentlyDismissed() {
     try {
       var at = Number(localStorage.getItem(DISMISS_KEY));
-      return at && Date.now() - at < DISMISS_DAYS * 24 * 60 * 60 * 1000;
+      return at && Date.now() - at < DISMISS_HOURS * 60 * 60 * 1000;
     } catch (e) {
       return false;
     }
