@@ -51,7 +51,7 @@
   }
 
   function renderTrips() {
-    tripList.innerHTML = "";
+    tripList.replaceChildren();
     trips.forEach(function (trip, index) {
       var node = template.content.firstElementChild.cloneNode(true);
       var country = node.querySelector(".trip-country");
@@ -311,15 +311,34 @@
   var schemeList = document.getElementById("scheme-list");
   var modeHint = document.getElementById("mode-hint");
 
+  // Built with createElement and textContent (no HTML strings), so the page
+  // works under the strict Trusted Types policy.
+  function el(tag, className, text, hidden) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text) node.textContent = text;
+    if (hidden) node.setAttribute("aria-hidden", "true");
+    return node;
+  }
   S.SCHEMES.forEach(function (s) {
-    var option = document.createElement("label");
-    option.className = "scheme-option";
-    var swatch = s.stripe.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join("");
-    option.innerHTML = '<input type="radio" name="scheme" value="' + s.id + '">' +
-      '<span class="scheme-flag" aria-hidden="true">' + s.flag + '</span>' +
-      '<span class="scheme-name">' + s.name + (s.id === "europe" ? " (default)" : "") + '</span>' +
-      '<span class="scheme-swatch" aria-hidden="true">' + swatch + '</span>' +
-      '<span class="scheme-check" aria-hidden="true">\u2713</span>';
+    var option = el("label", "scheme-option");
+    var input = document.createElement("input");
+    input.type = "radio";
+    input.name = "scheme";
+    input.value = s.id;
+    var swatch = el("span", "scheme-swatch", "", true);
+    s.stripe.forEach(function (c) {
+      var bar = document.createElement("i");
+      bar.style.background = c; // set through the style object, which the policy allows
+      swatch.appendChild(bar);
+    });
+    option.append(
+      input,
+      el("span", "scheme-flag", s.flag, true),
+      el("span", "scheme-name", s.name + (s.id === "europe" ? " (default)" : "")),
+      swatch,
+      el("span", "scheme-check", "\u2713", true)
+    );
     schemeList.appendChild(option);
   });
 
@@ -477,12 +496,12 @@
   function escapeXml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
 
   // SVG file: the map plus title and address as real text.
-  function framedSvg(map) {
+  function framedSvg(map, fontDataUrl) {
     var c = frameColors();
     var w = map.width, h = map.height + FRAME.header + FRAME.footer;
     var inner = map.text.replace(/^<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
     return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + " " + h + '">' +
-      '<style>@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif&amp;display=swap");</style>' +
+      (fontDataUrl ? '<style>@font-face { font-family: "Instrument Serif"; src: url("' + fontDataUrl + '") format("woff2"); }</style>' : "") +
       '<rect width="' + w + '" height="' + h + '" fill="' + c.bg + '"/>' +
       '<text x="' + w / 2 + '" y="58" text-anchor="middle" font-family="' + escapeXml(SERIF) + '" font-size="46" fill="' + c.brand + '">All Trips Considered</text>' +
       '<text x="' + w / 2 + '" y="96" text-anchor="middle" font-family="' + escapeXml(c.sans) + '" font-size="24" font-weight="700" fill="' + c.text + '">Schengen 90/180 Calculator \uD83C\uDDEA\uD83C\uDDFA</text>' +
@@ -537,6 +556,24 @@
     });
   }
 
+  var fontPromise = null;
+  function embeddedFont() {
+    if (!fontPromise) {
+      fontPromise = fetch("fonts/instrument-serif-v5-latin.woff2")
+        .then(function (r) { if (!r.ok) throw new Error("font"); return r.blob(); })
+        .then(function (blob) {
+          return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function () { resolve(reader.result); };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        });
+      fontPromise.catch(function () { fontPromise = null; });
+    }
+    return fontPromise;
+  }
+
   function mapFileName(format) {
     return "schengen-map-" + (referenceInput.value || C.todayIso()) + "." + format;
   }
@@ -544,9 +581,12 @@
   setupFormatMenu("map-download", "map-menu", function (format) {
     var name = mapFileName(format);
     if (format === "svg") {
-      if (downloadBlob(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + framedSvg(standaloneMapSvg())], { type: "image/svg+xml" }), name)) {
-        showMapStatus("Downloaded " + name + ".");
-      }
+      // Embed the self-hosted font so the file is complete on its own and makes no outside requests.
+      var save = function (fontDataUrl) {
+        var svgText = '<?xml version="1.0" encoding="UTF-8"?>\n' + framedSvg(standaloneMapSvg(), fontDataUrl);
+        if (downloadBlob(new Blob([svgText], { type: "image/svg+xml" }), name)) showMapStatus("Downloaded " + name + ".");
+      };
+      embeddedFont().then(save, function () { save(null); });
       return;
     }
     mapImageBlob(format).then(function (blob) {

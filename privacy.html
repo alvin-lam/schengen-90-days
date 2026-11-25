@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Security policy. Keep in sync with _headers, which adds frame-ancestors and the other headers. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types schengen-sw; upgrade-insecure-requests">
   <title>Privacy | Schengen 90/180 Calculator | All Trips Considered</title>
   <meta name="description" content="How the Schengen 90/180 Calculator handles your data: trips stay in your browser, nothing is uploaded, and no cookies or tracking are used.">
   <link rel="canonical" href="https://90days.alltripsconsidered.com/privacy.html">
@@ -31,7 +33,7 @@
   "url": "https://90days.alltripsconsidered.com/privacy.html",
   "description": "How the Schengen 90/180 Calculator handles your data: trips stay in your browser, nothing is uploaded, and no cookies or tracking are used.",
   "inLanguage": "en",
-  "dateModified": "2026-11-24",
+  "dateModified": "2026-11-25",
   "isPartOf": {
     "@type": "WebSite",
     "@id": "https://90days.alltripsconsidered.com/#website",
@@ -51,24 +53,11 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0a2ea8">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap">
+  <link rel="preload" href="fonts/instrument-serif-v5-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css">
   <script src="js/countries.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/scheme.js"></script>
-  <style>
-    .policy { max-width: 720px; margin: 0 auto; }
-    .policy h2 { font-size: 1.15rem; margin: 26px 0 8px; }
-    .policy p, .policy li { line-height: 1.65; }
-    .policy ul { padding-left: 1.2em; }
-    .policy code { font-size: .9em; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
-    .policy a { color: var(--brand-link); }
-    .back-link { display: inline-block; margin-bottom: 18px; color: var(--brand-link); font-weight: 600; text-decoration: none; }
-    .back-link:hover { text-decoration: underline; }
-    .updated { color: var(--muted); }
-  </style>
 </head>
 <body>
   <main class="container">
@@ -107,9 +96,9 @@
       <h2>Services the page relies on</h2>
       <ul>
         <li><strong>GitHub Pages</strong> hosts the site. Like any web host, it receives standard connection details such as your IP address when you load the page. See the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub Privacy Statement</a>.</li>
-        <li><strong>Google Fonts</strong> provides the Instrument Serif typeface. Your browser requests the font from Google, which receives your IP address. See the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.</li>
+        <li><strong>Cloudflare</strong> provides the domain name service (DNS) that points your browser to the site. See the <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare Privacy Policy</a>.</li>
       </ul>
-      <p>Neither service receives your trips.</p>
+      <p>Neither service receives your trips. The page's typeface is stored on this site, so loading it sends nothing to Google or any other font service.</p>
 
       <h2>Changes</h2>
       <p>If the calculator ever starts collecting anything, such as anonymous visit counts, this page will be updated first and will explain what is collected and why.</p>
@@ -132,6 +121,6 @@
       </nav>
     </footer>
   </main>
-  <script>document.getElementById("copyright-year").textContent = String(new Date().getFullYear());</script>
+  <script src="js/footer.js"></script>
 </body>
 </html>

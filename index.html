@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Security policy. Keep in sync with _headers, which adds frame-ancestors and the other headers. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types schengen-sw; upgrade-insecure-requests">
   <title>Schengen 90/180 Day Calculator | All Trips Considered</title>
   <meta name="description" content="Free Schengen 90/180 calculator. Count your days in the Schengen Area over the last 180 days, see your trips on a map, and export or share your record.">
   <meta name="author" content="All Trips Considered">
@@ -101,9 +103,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Schengen 90/180">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap">
+  <link rel="preload" href="fonts/instrument-serif-v5-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css">
   <script src="js/countries.js"></script>
   <script src="js/theme.js"></script>

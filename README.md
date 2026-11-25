@@ -63,6 +63,14 @@ Countries are stored by ISO code, never by name. Older saves (version 1, a plain
 
 The page shows dates, times, and numbers in the visitor's device format (language and region), including the 12 or 24 hour clock and local digits. The TXT export uses the same device formats, with the export time in the device's time zone. Saved data, CSV, JSON, and file names always use `YYYY-MM-DD` so spreadsheets and other programs read them reliably. Day counting never depends on the time zone.
 
+## Security
+
+- **Content-Security-Policy** in a `<meta>` tag on both pages: scripts, styles, fonts, and data load only from this site; images also allow `data:` and `blob:` (map downloads). No inline scripts or styles, no `eval`, and no third-party requests.
+- **Trusted Types** are enforced, so the browser blocks `innerHTML` and similar HTML string sinks. Build interface with `textContent` and `createElement`. The only policy allowed is `schengen-sw`, in `js/install.js`, and it creates exactly one URL: `sw.js`.
+- **Fonts are self-hosted** in `fonts/` (Instrument Serif, SIL Open Font License in `fonts/OFL.txt`). Downloaded SVG maps embed the font, so they make no outside requests either.
+- **`_headers`** holds the full header set: the policy plus `frame-ancestors 'none'`, HSTS (90 days, no `includeSubDomains` or `preload` yet), `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and cross-origin isolation headers, with cache rules. Cloudflare Pages and Netlify read it; **GitHub Pages does not**, so while the site is on GitHub Pages, set the same headers with a Cloudflare Transform Rule.
+- Keep the policy in the two `<meta>` tags and in `_headers` the same. If a change needs a new source (for example analytics), add it to all three.
+
 ## Privacy
 
 See [`privacy.html`](privacy.html), linked from the page footer. Trips, the chosen mode, and the color scheme are saved only in the visitor's browser (`localStorage`). Nothing is uploaded. Exported and downloaded files are created on the device. Sharing sends only what the visitor chooses to share.
@@ -84,6 +92,9 @@ js/install.js          Add to Home Screen prompt and service worker setup
 sw.js                  Service worker for offline use (must stay at the root)
 manifest.webmanifest   App name, colors, and icons for installing
 icons/, favicon.ico    App icons and favicons
+fonts/                 Instrument Serif (self-hosted) and its license
+js/footer.js           Copyright year on pages without the full calculator
+_headers               Security and cache headers (Cloudflare Pages, Netlify)
 tests/calc.test.js     Unit tests
 tools/build-map.js     Rebuilds the map from Natural Earth data
 CNAME                  Custom domain for GitHub Pages
@@ -180,6 +191,7 @@ These need the site owner's accounts or approval.
 - [x] Travel Tools links to the other All Trips Considered tools: buttons on desktop, a list on phones
 - [x] Search and sharing properties refreshed on both pages (title, description, share tags, structured data with feature list)
 - [x] Add to Home Screen banner: Close hides it for 24 hours
+- [x] Security hardening: self-hosted fonts, strict Content-Security-Policy with Trusted Types, no inline code or HTML strings, `_headers` file
 
 ## Disclaimer
 

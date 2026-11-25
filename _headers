@@ -1,0 +1,39 @@
+# Security and caching headers.
+# Read by Cloudflare Pages and Netlify. GitHub Pages ignores this file, so while the
+# site is on GitHub Pages, set the same headers with a Cloudflare Transform Rule.
+# Keep the Content-Security-Policy in sync with the <meta> tag in index.html and privacy.html.
+#
+# HSTS starts at 90 days without includeSubDomains or preload. Add those only after
+# every alltripsconsidered.com subdomain is confirmed to work over HTTPS.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types schengen-sw; frame-ancestors 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=7776000
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+
+/*.html
+  Cache-Control: no-cache
+
+/
+  Cache-Control: no-cache
+
+/sw.js
+  Cache-Control: no-cache
+
+/css/*
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/js/*
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/icons/*
+  Cache-Control: public, max-age=86400, must-revalidate
+
+# Font files carry their version in the name; give a new version a new name.
+/fonts/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
