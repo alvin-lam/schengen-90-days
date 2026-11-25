@@ -177,6 +177,9 @@ These need the site owner's accounts or approval.
 - [x] One shared country list (`js/countries.js`) and versioned saved data with automatic upgrades
 - [x] Old feature branches deleted on GitHub; only `claude/peaceful-rubin-dyhyh5` and `prod` remain
 - [x] "Rules last checked" note explaining which countries are not included and the Entry/Exit System
+- [x] Travel Tools links to the other All Trips Considered tools: buttons on desktop, a list on phones
+- [x] Search and sharing properties refreshed on both pages (title, description, share tags, structured data with feature list)
+- [x] Add to Home Screen banner: Close hides it for 24 hours
 
 ## Disclaimer
 
