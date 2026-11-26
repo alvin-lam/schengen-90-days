@@ -77,6 +77,8 @@ See [`privacy.html`](privacy.html), linked from the page footer. Trips, the chos
 
 ## Project layout
 
+Everything the site serves lives in `docs/`, which GitHub Pages publishes. Development files (this README and `tools/`) stay at the repository root. Paths below for site files are relative to `docs/`.
+
 ```
 index.html             The page, including the inline Europe map
 privacy.html           Privacy page, linked from the footer
@@ -101,10 +103,10 @@ robots.txt, sitemap.xml  Search engine crawling and sitemap
 
 ## Running locally
 
-No build step is needed. Serve the folder and open it in a browser:
+No build step is needed. Serve the `docs/` folder and open it in a browser:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8000 --directory docs
 ```
 
 Then visit http://localhost:8000. Use a local server rather than opening `index.html` directly, so offline support and installing work.
@@ -124,7 +126,7 @@ Workflow:
 
 1. Make and test changes on `claude/peaceful-rubin-dyhyh5` (or a short-lived feature branch merged into it), then push.
 2. Merge into `prod` only when the site owner explicitly asks. Keep it a fast-forward merge so `prod` never has commits of its own.
-3. GitHub Pages should publish from `prod` (Settings > Pages > Build and deployment). The live site then updates a few minutes after `prod` changes.
+3. GitHub Pages should publish the `docs/` folder of `prod` (Settings > Pages > Build and deployment, folder `/docs`). The live site then updates a few minutes after `prod` changes.
 
 When changing any file the offline app uses, increase the version number in the `CACHE` name at the top of `sw.js`. Installed apps then fetch the new files on their next visit while online.
 
@@ -149,7 +151,7 @@ Planned work for the Schengen 90/180 Calculator, in suggested order.
 
 These need the site owner's accounts or approval.
 
-- [ ] **Confirm the GitHub Pages source.** Settings > Pages should publish from `prod`, so changes go live only after a merge is approved.
+- [ ] **Confirm the GitHub Pages source.** Settings > Pages should publish the `/docs` folder of `prod`, so changes go live only after a merge is approved.
 - [ ] **Submit the sitemap to search engines.** Add the site to [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters), then submit `https://90days.alltripsconsidered.com/sitemap.xml`.
 
 ### Features
