@@ -79,8 +79,8 @@ docs/js/device.js             Detects in-app browsers and whether files can be s
 docs/js/install.js            Add to Home Screen prompt and service worker setup
 docs/sw.js                    Service worker for offline use (must stay at the top of docs/)
 docs/manifest.webmanifest     App name, colors, and icons for installing
-docs/icons/                   App icons and the share image (og-image.png)
-docs/favicon.ico              Favicon
+docs/icons/                   App icons, browser tab icons (tabicon-32.png and tabicon-192.png, the All Trips Considered artwork) and the share image (og-image.png)
+docs/favicon.ico              Favicon: the app icon
 docs/fonts/                   Instrument Serif (self-hosted) and its license
 docs/CNAME                    Custom domain for GitHub Pages
 docs/robots.txt               Search engine crawling rules
