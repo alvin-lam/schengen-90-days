@@ -148,7 +148,7 @@ When changing any file the offline app uses, increase the version number in the 
   ```
 
   Then replace the SVG between the `MAP START` and `MAP END` comments in `index.html` with `tools/europe-map.svg`.
-- **Search engines:** the title, description, canonical address, share tags (Open Graph and X), share image (`icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `index.html` and `privacy.html`. The main page describes the organization, the site, and the app with its feature list; keep that list in step with new features. Keep titles under about 60 characters so search results do not cut them off. Update `lastmod` in `sitemap.xml` after major changes.
+- **Search engines:** the title, description, canonical address, share tags (Open Graph and X), share image (`icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `index.html` and `privacy.html`. The main page describes the organization, the site, and the app with its feature list; keep that list in step with new features. Keep titles under about 60 characters so search results do not cut them off. After a change worth re-indexing, update `lastmod` in `sitemap.xml` for each page that changed, `dateModified` in that page's structured data, and the visible "Last updated" date on the privacy page if its text changed.
 - **Map data:** Natural Earth (public domain), through the `world-atlas` package.
 
 ## Roadmap
@@ -189,7 +189,7 @@ These need the site owner's accounts or approval.
 - [x] Old feature branches deleted on GitHub; only `claude/peaceful-rubin-dyhyh5` and `prod` remain
 - [x] "Rules last checked" note explaining which countries are not included and the Entry/Exit System
 - [x] Travel Tools links to the other All Trips Considered tools: buttons on desktop, a list on phones
-- [x] Search and sharing properties refreshed on both pages (title, description, share tags, structured data with feature list)
+- [x] Search and sharing properties refreshed on both pages (title, description, share tags, structured data with feature list, topic, and modified dates)
 - [x] Add to Home Screen banner: Close hides it for 24 hours
 - [x] Security hardening: self-hosted fonts, strict Content-Security-Policy with Trusted Types, no inline code or HTML strings, `_headers` file
 
