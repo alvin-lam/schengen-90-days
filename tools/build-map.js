@@ -4,7 +4,7 @@
  *   cd tools && npm install && node build-map.js
  *
  * Then paste the output between the MAP START / MAP END markers in
- * index.html. The page itself needs no map library at runtime.
+ * docs/index.html. The page itself needs no map library at runtime.
  */
 "use strict";
 const fs = require("fs");
@@ -12,7 +12,7 @@ const path = require("path");
 const d3 = require("d3-geo");
 const topojson = require("topojson-client");
 const simplify = require("topojson-simplify");
-const K = require("../js/countries.js");
+const K = require("../docs/js/countries.js");
 
 const WIDTH = 800;
 const DETAIL = 0.15; // topojson quantile: lower keeps fewer points (smaller file, rougher coasts)
