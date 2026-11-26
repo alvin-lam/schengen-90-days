@@ -93,7 +93,6 @@ sw.js                  Service worker for offline use (must stay at the root)
 manifest.webmanifest   App name, colors, and icons for installing
 icons/, favicon.ico    App icons and favicons
 fonts/                 Instrument Serif (self-hosted) and its license
-js/footer.js           Copyright year on pages without the full calculator
 _headers               Security and cache headers (Cloudflare Pages, Netlify)
 tests/calc.test.js     Unit tests
 tools/build-map.js     Rebuilds the map from Natural Earth data
@@ -148,7 +147,7 @@ When changing any file the offline app uses, increase the version number in the 
   ```
 
   Then replace the SVG between the `MAP START` and `MAP END` comments in `index.html` with `tools/europe-map.svg`.
-- **Search engines:** the title, description, canonical address, share tags (Open Graph and X), share image (`icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `index.html` and `privacy.html`. The main page describes the organization, the site, and the app with its feature list; keep that list in step with new features. Keep titles under about 60 characters so search results do not cut them off. After a change worth re-indexing, update `lastmod` in `sitemap.xml` for each page that changed, `dateModified` in that page's structured data, and the visible "Last updated" date on the privacy page if its text changed.
+- **Search engines:** the title, description, canonical address, share tags (Open Graph and X), share image (`icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `index.html`. The main page describes the organization, the site, and the app with its feature list; keep that list in step with new features. Keep titles under about 60 characters so search results do not cut them off. After a change worth re-indexing, update `lastmod` in `sitemap.xml` for each page that changed, `dateModified` in that page's structured data, and the visible "Last updated" date on the privacy page if its text changed.
 - **Map data:** Natural Earth (public domain), through the `world-atlas` package.
 
 ## Roadmap

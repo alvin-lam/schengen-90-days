@@ -1,126 +1,81 @@
 <!doctype html>
+<!-- Standard All Trips Considered privacy page. Keep the section order and wording in step with the other apps. -->
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <!-- Security policy. Keep in sync with _headers, which adds frame-ancestors and the other headers. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types schengen-sw; upgrade-insecure-requests">
-  <title>Privacy | Schengen 90/180 Calculator | All Trips Considered</title>
-  <meta name="description" content="How the Schengen 90/180 Calculator handles your data: trips stay in your browser, nothing is uploaded, and no cookies or tracking are used.">
-  <link rel="canonical" href="https://90days.alltripsconsidered.com/privacy.html">
-  <meta name="author" content="All Trips Considered">
-  <meta name="robots" content="index, follow">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="All Trips Considered">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:title" content="Privacy | Schengen 90/180 Calculator">
-  <meta property="og:description" content="Your trips stay on your device. No accounts, no cookies, no tracking.">
-  <meta property="og:url" content="https://90days.alltripsconsidered.com/privacy.html">
-  <meta property="og:image" content="https://90days.alltripsconsidered.com/icons/og-image.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Schengen 90/180 Calculator by All Trips Considered">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Privacy | Schengen 90/180 Calculator">
-  <meta name="twitter:description" content="Your trips stay on your device. No accounts, no cookies, no tracking.">
-  <meta name="twitter:image" content="https://90days.alltripsconsidered.com/icons/og-image.png">
-  <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "@id": "https://90days.alltripsconsidered.com/privacy.html#webpage",
-  "name": "Privacy",
-  "url": "https://90days.alltripsconsidered.com/privacy.html",
-  "description": "How the Schengen 90/180 Calculator handles your data: trips stay in your browser, nothing is uploaded, and no cookies or tracking are used.",
-  "inLanguage": "en",
-  "dateModified": "2026-11-25",
-  "isPartOf": {
-    "@type": "WebSite",
-    "@id": "https://90days.alltripsconsidered.com/#website",
-    "name": "Schengen 90/180 Calculator",
-    "url": "https://90days.alltripsconsidered.com/"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "@id": "https://alltripsconsidered.com/#organization",
-    "name": "All Trips Considered",
-    "url": "https://alltripsconsidered.com/"
-  }
-}
-  </script>
-  <link rel="icon" href="favicon.ico" sizes="48x48">
-  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#0a2ea8">
-  <link rel="preload" href="fonts/instrument-serif-v5-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="js/countries.js"></script>
-  <script src="js/theme.js"></script>
-  <script src="js/scheme.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types schengen-sw; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Privacy | Schengen 90/180 Calculator</title>
+<meta name="description" content="How Schengen 90/180 Calculator handles your information: everything you enter stays on your device.">
+<meta name="theme-color" content="#0a2ea8">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preload" href="fonts/instrument-serif-v5-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/privacy.css">
+<script src="js/theme.js"></script>
 </head>
 <body>
-  <main class="container">
-    <header class="page-header">
-      <p class="brand"><a href="https://alltripsconsidered.com" target="_blank" rel="noopener">All Trips Considered</a></p>
-      <h1 id="page-title">Privacy</h1>
-      <p class="lede">Schengen 90/180 Calculator</p>
-    </header>
+<main class="privacy">
+  <header class="privacy-header">
+    <p class="privacy-brand"><a href="https://alltripsconsidered.com">All Trips Considered</a></p>
+    <h1>Privacy</h1>
+    <p class="privacy-app">Schengen 90/180 Calculator</p>
+    <p class="privacy-updated">Last updated: November 26, 2026</p>
+  </header>
 
-    <article class="card policy">
-      <a class="back-link" href="./">&larr; Back to the calculator</a>
-      <p class="updated">Last updated: November 2026</p>
+  <section class="privacy-section" aria-labelledby="short">
+    <h2 id="short">The short version</h2>
+    <p>Everything you enter stays in this browser on this device. The calculator has no accounts, cookies, analytics, advertising or tracking. We never receive, see or store what you enter.</p>
+  </section>
 
-      <h2>The short version</h2>
-      <p>Your trips stay on your device. The calculator does not upload them, does not use cookies, and does not track you.</p>
+  <section class="privacy-section" aria-labelledby="saved">
+    <h2 id="saved">What is saved on your device</h2>
+    <p>The calculator saves the following in your browser's local storage so it is still there next time:</p>
+    <ul>
+      <li>Your trips: country, entry date and departure date.</li>
+      <li>Your light, dark or automatic mode, and your color scheme.</li>
+      <li>When you closed the Add to Home Screen message.</li>
+    </ul>
+    <p>Installing the app also keeps a copy of the site on your device so it works offline. Clearing your browser's site data or uninstalling the app removes everything, and we cannot recover it.</p>
+  </section>
 
-      <h2>What is saved, and where</h2>
-      <p>The calculator saves a few things in your browser's local storage so they are still there next time:</p>
-      <ul>
-        <li>Your trips: country, entry date, and departure date</li>
-        <li>Your appearance choices: Auto, Light, or Dark mode, and the color scheme</li>
-        <li>Whether you closed the Add to Home Screen banner</li>
-      </ul>
-      <p>This information never leaves your device. We cannot see it. Clearing your browser's site data removes it.</p>
+  <section class="privacy-section" aria-labelledby="device">
+    <h2 id="device">What your device tells the calculator</h2>
+    <p>The calculator reads your device's time zone and language setting to format dates, numbers and units and to choose season and holiday colors. These settings are used only on your device and never leave it.</p>
+  </section>
 
-      <h2>What we do not collect</h2>
-      <ul>
-        <li>No accounts, names, email addresses, or passport details</li>
-        <li>No cookies</li>
-        <li>No analytics, advertising, or tracking tools</li>
-      </ul>
+  <section class="privacy-section" aria-labelledby="files">
+    <h2 id="files">Files you export or share</h2>
+    <p>Files you export, such as CSV, JSON and TXT records and JPG, PNG and SVG map images, are created on your device and saved where you choose. They are not uploaded anywhere. When you use Share, the calculator opens the app or website you pick with a link and a short message. Nothing is posted until you confirm it there, and that service's privacy policy then applies.</p>
+  </section>
 
-      <h2>Files you download or share</h2>
-      <p>Exported records (CSV, JSON, TXT) and map images (JPG, PNG, SVG) are created on your device. They are not uploaded anywhere. When you use Share, only what you choose to share is sent, and it goes to the app or website you pick. That service's own privacy policy then applies.</p>
+  <section class="privacy-section" aria-labelledby="hosting">
+    <h2 id="hosting">Where the site is served from</h2>
+    <p>Every file the page uses, including its fonts and data, comes from this site. The page makes no requests to other services. <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener noreferrer">GitHub Pages</a> hosts the site, and <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener noreferrer">Cloudflare</a> provides its domain name service. Like any website, these services can see your IP address and basic browser details when you visit, under their own privacy policies. Neither receives what you enter.</p>
+  </section>
 
-      <h2>Services the page relies on</h2>
-      <ul>
-        <li><strong>GitHub Pages</strong> hosts the site. Like any web host, it receives standard connection details such as your IP address when you load the page. See the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub Privacy Statement</a>.</li>
-        <li><strong>Cloudflare</strong> provides the domain name service (DNS) that points your browser to the site. See the <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare Privacy Policy</a>.</li>
-      </ul>
-      <p>Neither service receives your trips. The page's typeface is stored on this site, so loading it sends nothing to Google or any other font service.</p>
+  <section class="privacy-section" aria-labelledby="children">
+    <h2 id="children">Children</h2>
+    <p>The calculator does not collect personal information from anyone, including children.</p>
+  </section>
 
-      <h2>Changes</h2>
-      <p>If the calculator ever starts collecting anything, such as anonymous visit counts, this page will be updated first and will explain what is collected and why.</p>
+  <section class="privacy-section" aria-labelledby="changes">
+    <h2 id="changes">Changes</h2>
+    <p>If the calculator ever starts collecting information, such as anonymous visit counts, this page will be updated first to explain what is collected and why. Where the law requires it, you will be asked for consent first.</p>
+  </section>
 
-      <h2>Contact</h2>
-      <p>Questions about privacy can be sent through <a href="https://alltripsconsidered.com" target="_blank" rel="noopener">All Trips Considered</a>.</p>
-    </article>
+  <section class="privacy-section" aria-labelledby="contact">
+    <h2 id="contact">Contact</h2>
+    <p>Questions about privacy can be sent to report[at]alltripsconsidered[dot]com.</p>
+  </section>
 
-    <footer class="disclaimer">
-      <p class="copyright">© <span id="copyright-year">2026</span> <a href="https://alltripsconsidered.com">All Trips Considered</a>. All rights reserved.</p>
-      <nav class="quick-links" aria-labelledby="quick-links-title">
-        <h2 id="quick-links-title">Travel Tools</h2>
-        <ul>
-          <li><a href="https://jetlag.alltripsconsidered.com"><span class="ql-icon" aria-hidden="true">💤</span><span class="ql-name">Jet Lag &amp; Recovery</span><span class="ql-arrow" aria-hidden="true">›</span></a></li>
-          <li><a href="https://mymaps.alltripsconsidered.com"><span class="ql-icon" aria-hidden="true">🗺️</span><span class="ql-name">My Maps</span><span class="ql-arrow" aria-hidden="true">›</span></a></li>
-          <li><a href="https://points.alltripsconsidered.com"><span class="ql-icon" aria-hidden="true">✈️</span><span class="ql-name">Point Calculator</span><span class="ql-arrow" aria-hidden="true">›</span></a></li>
-          <li><a href="https://90days.alltripsconsidered.com" aria-current="page"><span class="ql-icon" aria-hidden="true">🇪🇺</span><span class="ql-name">Schengen 90/180</span><span class="ql-arrow" aria-hidden="true">You are here</span></a></li>
-          <li><a href="https://tripfinder.alltripsconsidered.com"><span class="ql-icon" aria-hidden="true">🧭</span><span class="ql-name">Trip Finder</span><span class="ql-arrow" aria-hidden="true">›</span></a></li>
-        </ul>
-      </nav>
-    </footer>
-  </main>
-  <script src="js/footer.js"></script>
+  <footer class="privacy-footer">
+    <p class="privacy-back"><a href="./">Back to the Schengen 90/180 Calculator</a></p>
+    <p class="privacy-copyright">© 2026 <a href="https://alltripsconsidered.com">All Trips Considered</a>. All rights reserved.</p>
+  </footer>
+</main>
 </body>
 </html>
