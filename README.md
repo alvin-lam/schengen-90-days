@@ -68,8 +68,8 @@ The page shows dates, times, and numbers in the visitor's device format (languag
 - **Content-Security-Policy** in a `<meta>` tag on both pages: scripts, styles, fonts, and data load only from this site; images also allow `data:` and `blob:` (map downloads). No inline scripts or styles, no `eval`, and no third-party requests.
 - **Trusted Types** are enforced, so the browser blocks `innerHTML` and similar HTML string sinks. Build interface with `textContent` and `createElement`. The only policy allowed is `schengen-sw`, in `js/install.js`, and it creates exactly one URL: `sw.js`.
 - **Fonts are self-hosted** in `fonts/` (Instrument Serif, SIL Open Font License in `fonts/OFL.txt`). Downloaded SVG maps embed the font, so they make no outside requests either.
-- **`_headers`** holds the full header set: the policy plus `frame-ancestors 'none'`, HSTS (90 days, no `includeSubDomains` or `preload` yet), `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and cross-origin isolation headers, with cache rules. Cloudflare Pages and Netlify read it; **GitHub Pages does not**, so while the site is on GitHub Pages, set the same headers with a Cloudflare Transform Rule.
-- Keep the policy in the two `<meta>` tags and in `_headers` the same. If a change needs a new source (for example analytics), add it to all three.
+- **Response headers.** GitHub Pages cannot send custom headers, so set them with a Cloudflare Transform Rule (Rules > Transform Rules > Modify Response Header): the same Content-Security-Policy plus `frame-ancestors 'none'`, `Strict-Transport-Security: max-age=7776000` (90 days, no `includeSubDomains` or `preload` yet), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()`, `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Resource-Policy: same-origin`.
+- Keep the policy in the two `<meta>` tags and in the Cloudflare rule the same. If a change needs a new source (for example analytics), add it to all three.
 
 ## Privacy
 
@@ -95,7 +95,6 @@ sw.js                  Service worker for offline use (must stay at the root)
 manifest.webmanifest   App name, colors, and icons for installing
 icons/, favicon.ico    App icons and favicons
 fonts/                 Instrument Serif (self-hosted) and its license
-_headers               Security and cache headers (Cloudflare Pages, Netlify)
 tools/build-map.js     Rebuilds the map from Natural Earth data
 CNAME                  Custom domain for GitHub Pages
 robots.txt, sitemap.xml  Search engine crawling and sitemap
@@ -182,7 +181,7 @@ These need the site owner's accounts or approval.
 - [x] Travel Tools links to the other All Trips Considered tools: buttons on desktop, a list on phones
 - [x] Search and sharing properties refreshed on both pages (title, description, share tags, structured data with feature list, topic, and modified dates)
 - [x] Add to Home Screen banner: Close hides it for 24 hours
-- [x] Security hardening: self-hosted fonts, strict Content-Security-Policy with Trusted Types, no inline code or HTML strings, `_headers` file
+- [x] Security hardening: self-hosted fonts, strict Content-Security-Policy with Trusted Types, no inline code or HTML strings
 
 ## Disclaimer
 
