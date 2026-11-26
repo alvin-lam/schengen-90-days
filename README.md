@@ -68,14 +68,16 @@ The page shows dates, times, and numbers in the visitor's device format (languag
 - **Content-Security-Policy** in a `<meta>` tag on both pages: scripts, styles, fonts, and data load only from this site; images also allow `data:` and `blob:` (map downloads). No inline scripts or styles, no `eval`, and no third-party requests.
 - **Trusted Types** are enforced, so the browser blocks `innerHTML` and similar HTML string sinks. Build interface with `textContent` and `createElement`. The only policy allowed is `schengen-sw`, in `js/install.js`, and it creates exactly one URL: `sw.js`.
 - **Fonts are self-hosted** in `fonts/` (Instrument Serif, SIL Open Font License in `fonts/OFL.txt`). Downloaded SVG maps embed the font, so they make no outside requests either.
-- **`_headers`** holds the full header set: the policy plus `frame-ancestors 'none'`, HSTS (90 days, no `includeSubDomains` or `preload` yet), `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and cross-origin isolation headers, with cache rules. Cloudflare Pages and Netlify read it; **GitHub Pages does not**, so while the site is on GitHub Pages, set the same headers with a Cloudflare Transform Rule.
-- Keep the policy in the two `<meta>` tags and in `_headers` the same. If a change needs a new source (for example analytics), add it to all three.
+- **Response headers.** GitHub Pages cannot send custom headers, so set them with a Cloudflare Transform Rule (Rules > Transform Rules > Modify Response Header): the same Content-Security-Policy plus `frame-ancestors 'none'`, `Strict-Transport-Security: max-age=7776000` (90 days, no `includeSubDomains` or `preload` yet), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()`, `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Resource-Policy: same-origin`.
+- Keep the policy in the two `<meta>` tags and in the Cloudflare rule the same. If a change needs a new source (for example analytics), add it to all three.
 
 ## Privacy
 
 See [`privacy.html`](privacy.html), linked from the page footer. Trips, the chosen mode, and the color scheme are saved only in the visitor's browser (`localStorage`). Nothing is uploaded. Exported and downloaded files are created on the device. Sharing sends only what the visitor chooses to share.
 
 ## Project layout
+
+Everything the site serves lives in `docs/`, which GitHub Pages publishes. Development files (this README and `tools/`) stay at the repository root. Paths below for site files are relative to `docs/`.
 
 ```
 index.html             The page, including the inline Europe map
@@ -93,7 +95,6 @@ sw.js                  Service worker for offline use (must stay at the root)
 manifest.webmanifest   App name, colors, and icons for installing
 icons/, favicon.ico    App icons and favicons
 fonts/                 Instrument Serif (self-hosted) and its license
-_headers               Security and cache headers (Cloudflare Pages, Netlify)
 tools/build-map.js     Rebuilds the map from Natural Earth data
 CNAME                  Custom domain for GitHub Pages
 robots.txt, sitemap.xml  Search engine crawling and sitemap
@@ -101,10 +102,10 @@ robots.txt, sitemap.xml  Search engine crawling and sitemap
 
 ## Running locally
 
-No build step is needed. Serve the folder and open it in a browser:
+No build step is needed. Serve the `docs/` folder and open it in a browser:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8000 --directory docs
 ```
 
 Then visit http://localhost:8000. Use a local server rather than opening `index.html` directly, so offline support and installing work.
@@ -124,7 +125,7 @@ Workflow:
 
 1. Make and test changes on `claude/peaceful-rubin-dyhyh5` (or a short-lived feature branch merged into it), then push.
 2. Merge into `prod` only when the site owner explicitly asks. Keep it a fast-forward merge so `prod` never has commits of its own.
-3. GitHub Pages should publish from `prod` (Settings > Pages > Build and deployment). The live site then updates a few minutes after `prod` changes.
+3. GitHub Pages should publish the `docs/` folder of `prod` (Settings > Pages > Build and deployment, folder `/docs`). The live site then updates a few minutes after `prod` changes.
 
 When changing any file the offline app uses, increase the version number in the `CACHE` name at the top of `sw.js`. Installed apps then fetch the new files on their next visit while online.
 
@@ -149,7 +150,7 @@ Planned work for the Schengen 90/180 Calculator, in suggested order.
 
 These need the site owner's accounts or approval.
 
-- [ ] **Confirm the GitHub Pages source.** Settings > Pages should publish from `prod`, so changes go live only after a merge is approved.
+- [ ] **Confirm the GitHub Pages source.** Settings > Pages should publish the `/docs` folder of `prod`, so changes go live only after a merge is approved.
 - [ ] **Submit the sitemap to search engines.** Add the site to [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters), then submit `https://90days.alltripsconsidered.com/sitemap.xml`.
 
 ### Features
@@ -180,7 +181,7 @@ These need the site owner's accounts or approval.
 - [x] Travel Tools links to the other All Trips Considered tools: buttons on desktop, a list on phones
 - [x] Search and sharing properties refreshed on both pages (title, description, share tags, structured data with feature list, topic, and modified dates)
 - [x] Add to Home Screen banner: Close hides it for 24 hours
-- [x] Security hardening: self-hosted fonts, strict Content-Security-Policy with Trusted Types, no inline code or HTML strings, `_headers` file
+- [x] Security hardening: self-hosted fonts, strict Content-Security-Policy with Trusted Types, no inline code or HTML strings
 
 ## Disclaimer
 
