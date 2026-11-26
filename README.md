@@ -1,8 +1,8 @@
 # Schengen 90/180 Calculator
 
-**Live site:** https://90days.alltripsconsidered.com
+A free web app from [All Trips Considered](https://alltripsconsidered.com) that counts how many days a traveler has spent in the Schengen Area during the 180 days ending on a chosen date. Everything runs in the browser, and trips are never sent to a server.
 
-A free web app from [All Trips Considered](https://alltripsconsidered.com) that counts how many days a traveler has spent in the Schengen Area during the 180 days ending on a chosen date. Everything runs in the browser. Trips are never sent to a server.
+Live site: https://90days.alltripsconsidered.com/
 
 ## Features
 
@@ -30,6 +30,12 @@ A free web app from [All Trips Considered](https://alltripsconsidered.com) that 
 ### Export
 - **Download** in the Export section saves the trips and totals as CSV (spreadsheet), JSON (data), or TXT (plain text). The file is created in the browser and never uploaded.
 
+### Dates, times, and numbers
+- The page shows dates, times, and numbers in the visitor's device format (language and region), including the 12 or 24 hour clock and local digits.
+- The TXT export uses the same device formats, with the export time in the device's time zone.
+- Saved data, CSV, JSON, and file names always use `YYYY-MM-DD` so spreadsheets and other programs read them reliably.
+- Day counting never depends on the time zone.
+
 ### Appearance
 - The button in the upper right corner opens the Appearance panel.
 - **Mode:** Auto (default, follows the device), Light, or Dark.
@@ -46,9 +52,44 @@ A free web app from [All Trips Considered](https://alltripsconsidered.com) that 
 - Notes on how days are counted and that the tool is not legal advice.
 - **Rules last checked:** the date the Schengen rules were last reviewed, why Cyprus, Ireland, and the microstates (Andorra, Monaco, San Marino, Vatican City) are not in the country list, and a note about the EU Entry/Exit System.
 - A link to the privacy page and the copyright line for All Trips Considered.
-- **Travel Tools** links to the other All Trips Considered tools: Jet Lag & Recovery, My Maps, Point Calculator, Schengen 90/180 (this site, highlighted), and Trip Finder. Buttons on wider screens, a list on phones.
+- **Travel Tools** links to the other All Trips Considered tools: Jet Lag & Recovery, My Maps, Point Calculator, Schengen 90/180 (this site, highlighted), and Trip Finder. They appear as buttons on wider screens and as a list on phones.
 
-## Saved data
+## Privacy
+
+Trips, the chosen mode, and the color scheme are saved only in the visitor's browser (`localStorage`). Nothing is uploaded: exported and downloaded files are created on the device, and sharing sends only what the visitor chooses to share. The full policy is in [`docs/privacy.html`](docs/privacy.html), linked from the page footer.
+
+## Project structure
+
+Everything the site serves lives in `docs/`, which GitHub Pages publishes. Development files stay at the repository root and are not published.
+
+```
+docs/index.html               The page, including the inline Europe map
+docs/privacy.html             Privacy page, linked from the footer
+docs/css/style.css            All styles, with light and dark color tokens
+docs/css/privacy.css          Styles for the privacy page
+docs/js/countries.js          The one list of Schengen countries: codes, names, flags, colors
+docs/js/calc.js               Day counting rules, status levels, saved-data upgrades
+docs/js/export.js             CSV, JSON, and TXT export
+docs/js/app.js                Page behavior: trips, map, downloads, sharing, menus
+docs/js/theme.js              Auto, Light, and Dark mode (loaded in <head>)
+docs/js/scheme.js             Applies the flag color schemes (loaded in <head>)
+docs/js/device.js             Detects in-app browsers and whether files can be saved
+docs/js/install.js            Add to Home Screen prompt and service worker setup
+docs/sw.js                    Service worker for offline use (must stay at the top of docs/)
+docs/manifest.webmanifest     App name, colors, and icons for installing
+docs/icons/                   App icons and the share image (og-image.png)
+docs/favicon.ico              Favicon
+docs/fonts/                   Instrument Serif (self-hosted) and its license
+docs/CNAME                    Custom domain for GitHub Pages
+docs/robots.txt               Search engine crawling rules
+docs/sitemap.xml              Sitemap for search engines
+README.md                     This file
+tools/build-map.js            Rebuilds the map from Natural Earth data
+tools/europe-map.svg          The map that build-map.js generates
+tools/package.json            Dependencies for the map builder
+```
+
+### Saved data
 
 Trips are saved in the browser under the key `schengen-90-180-trips`:
 
@@ -57,129 +98,103 @@ Trips are saved in the browser under the key `schengen-90-180-trips`:
   "trips": [{ "id": "t1abc", "country": "DE", "entry": "2026-06-01", "exit": "2026-06-10" }] }
 ```
 
-Countries are stored by ISO code, never by name. Older saves (version 1, a plain list with English country names) are upgraded automatically the first time a visitor opens the new version. If the format changes again, raise `DATA_VERSION` in `js/calc.js` and extend `upgradeSaved` so existing trips carry over.
+Countries are stored by ISO code, never by name. Older saves (version 1, a plain list with English country names) are upgraded automatically the first time a visitor opens the new version.
 
-## Dates, times, and numbers
+## Run locally
 
-The page shows dates, times, and numbers in the visitor's device format (language and region), including the 12 or 24 hour clock and local digits. The TXT export uses the same device formats, with the export time in the device's time zone. Saved data, CSV, JSON, and file names always use `YYYY-MM-DD` so spreadsheets and other programs read them reliably. Day counting never depends on the time zone.
-
-## Security
-
-- **Content-Security-Policy** in a `<meta>` tag on both pages: scripts, styles, fonts, and data load only from this site; images also allow `data:` and `blob:` (map downloads). No inline scripts or styles, no `eval`, and no third-party requests.
-- **Trusted Types** are enforced, so the browser blocks `innerHTML` and similar HTML string sinks. Build interface with `textContent` and `createElement`. The only policy allowed is `schengen-sw`, in `js/install.js`, and it creates exactly one URL: `sw.js`.
-- **Fonts are self-hosted** in `fonts/` (Instrument Serif, SIL Open Font License in `fonts/OFL.txt`). Downloaded SVG maps embed the font, so they make no outside requests either.
-- **Response headers.** GitHub Pages cannot send custom headers, so set them with a Cloudflare Transform Rule (Rules > Transform Rules > Modify Response Header): the same Content-Security-Policy plus `frame-ancestors 'none'`, `Strict-Transport-Security: max-age=7776000` (90 days, no `includeSubDomains` or `preload` yet), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()`, `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Resource-Policy: same-origin`.
-- Keep the policy in the two `<meta>` tags and in the Cloudflare rule the same. If a change needs a new source (for example analytics), add it to all three.
-
-## Privacy
-
-See [`privacy.html`](privacy.html), linked from the page footer. Trips, the chosen mode, and the color scheme are saved only in the visitor's browser (`localStorage`). Nothing is uploaded. Exported and downloaded files are created on the device. Sharing sends only what the visitor chooses to share.
-
-## Project layout
-
-Everything the site serves lives in `docs/`, which GitHub Pages publishes. Development files (this README and `tools/`) stay at the repository root. Paths below for site files are relative to `docs/`.
-
-```
-index.html             The page, including the inline Europe map
-privacy.html           Privacy page, linked from the footer
-css/style.css          All styles, with light and dark color tokens
-js/countries.js        The one list of Schengen countries: codes, names, flags, colors
-js/calc.js             Day counting rules, status levels, saved-data upgrades
-js/export.js           CSV, JSON, and TXT export
-js/app.js              Page behavior: trips, map, downloads, sharing, menus
-js/theme.js            Auto, Light, and Dark mode (loaded in <head>)
-js/scheme.js           Applies the flag color schemes (loaded in <head>)
-js/device.js           Detects in-app browsers and whether files can be saved
-js/install.js          Add to Home Screen prompt and service worker setup
-sw.js                  Service worker for offline use (must stay at the root)
-manifest.webmanifest   App name, colors, and icons for installing
-icons/, favicon.ico    App icons and favicons
-fonts/                 Instrument Serif (self-hosted) and its license
-tools/build-map.js     Rebuilds the map from Natural Earth data
-CNAME                  Custom domain for GitHub Pages
-robots.txt, sitemap.xml  Search engine crawling and sitemap
-```
-
-## Running locally
-
-No build step is needed. Serve the `docs/` folder and open it in a browser:
+No build step is needed. Serve the `docs/` folder with a local server rather than opening `index.html` directly, because the service worker (offline support) and installing only work over HTTP:
 
 ```bash
 python3 -m http.server 8000 --directory docs
 ```
 
-Then visit http://localhost:8000. Use a local server rather than opening `index.html` directly, so offline support and installing work.
+Open http://localhost:8000.
 
-## Publishing
+## Making changes
 
-The site is hosted on GitHub Pages at the custom domain in `CNAME`.
+### Changing the saved-data format
+If the saved format changes again, raise `DATA_VERSION` in `docs/js/calc.js` and extend `upgradeSaved` so existing trips carry over.
 
-### Branches
+### Adding or removing a Schengen country
+Edit `docs/js/countries.js`, which holds the code, names, flag, and colors in one place. Then rebuild the map. Never change an existing country's code, since saved trips use it.
 
-| Branch | Purpose |
-|---|---|
-| `claude/peaceful-rubin-dyhyh5` | Working branch. All changes are pushed here first. |
-| `prod` | Production and the repository's default branch. Changes reach it only when the site owner approves a merge. |
+### Rebuilding the map
+Run the map builder in `tools/`:
 
-Workflow:
+```bash
+cd tools && npm install && node build-map.js
+```
 
-1. Make and test changes on `claude/peaceful-rubin-dyhyh5` (or a short-lived feature branch merged into it), then push.
-2. Merge into `prod` only when the site owner explicitly asks. Keep it a fast-forward merge so `prod` never has commits of its own.
-3. GitHub Pages should publish the `docs/` folder of `prod` (Settings > Pages > Build and deployment, folder `/docs`). The live site then updates a few minutes after `prod` changes.
+Then replace the SVG between the `MAP START` and `MAP END` comments in `docs/index.html` with `tools/europe-map.svg`.
 
-When changing any file the offline app uses, increase the version number in the `CACHE` name at the top of `sw.js`. Installed apps then fetch the new files on their next visit while online.
+### Reviewing the Schengen rules
+When membership or related rules change, update `docs/js/countries.js` and the "Rules last checked" date in the footer of `docs/index.html`.
 
-## Maintenance notes
+### Search engines
+The title, description, canonical address, share tags (Open Graph and X), share image (`docs/icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `docs/index.html`. The main page describes the organization, the site, and the app with its feature list. Keep that list in step with new features. Keep titles under about 60 characters so search results do not cut them off.
 
-- **Adding or removing a Schengen country:** edit `js/countries.js` (code, names, flag, and colors in one place), then rebuild the map. Never change an existing country's code, since saved trips use it.
-- **Rebuilding the map:**
+After a change worth re-indexing, update these dates:
+- `lastmod` in `docs/sitemap.xml` for each page that changed.
+- `dateModified` in that page's structured data.
+- The visible "Last updated" date in `docs/privacy.html`, if its text changed.
 
-  ```bash
-  cd tools && npm install && node build-map.js
-  ```
+### Releasing an update
+When any file the offline app caches changes, increase the version number in the `CACHE` name at the top of `docs/sw.js`. If you add a new file that the app needs offline, add it to the `SHELL` list in the same file. Installed apps then fetch the new files on their next visit while online.
 
-  Then replace the SVG between the `MAP START` and `MAP END` comments in `index.html` with `tools/europe-map.svg`.
-- **Search engines:** the title, description, canonical address, share tags (Open Graph and X), share image (`icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `index.html`. The main page describes the organization, the site, and the app with its feature list; keep that list in step with new features. Keep titles under about 60 characters so search results do not cut them off. After a change worth re-indexing, update `lastmod` in `sitemap.xml` for each page that changed, `dateModified` in that page's structured data, and the visible "Last updated" date on the privacy page if its text changed.
-- **Map data:** Natural Earth (public domain), through the `world-atlas` package.
+## Security
+
+- **Content-Security-Policy** in a `<meta>` tag on both pages: scripts, styles, fonts, and data load only from this site. Images also allow `data:` and `blob:` (map downloads). There are no inline scripts or styles, no `eval`, and no third-party requests.
+- **Trusted Types** are enforced, so the browser blocks `innerHTML` and similar HTML string sinks. Build interface with `textContent` and `createElement`. The only allowed policy is `schengen-sw`, in `docs/js/install.js`, and it creates exactly one URL: `sw.js`.
+- **Fonts are self-hosted** in `docs/fonts/`. Downloaded SVG maps embed the font, so they make no outside requests either.
+- **Checked input:** saved trips are checked when they load. Unknown countries are cleared so the visitor can pick again, and a trip whose departure comes before its entry is flagged and counts no days.
+- Keep the policy in the two `<meta>` tags and in the Cloudflare rule the same. If a change needs a new source (for example analytics), add it to all three.
+
+### Headers to set in Cloudflare
+
+GitHub Pages cannot send custom headers, so they are set with a Cloudflare Transform Rule (Rules > Transform Rules > Modify Response Header) for `90days.alltripsconsidered.com`:
+
+- `Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types schengen-sw; upgrade-insecure-requests; frame-ancestors 'none'`
+- `Strict-Transport-Security: max-age=7776000` (90 days, no `includeSubDomains` or `preload` yet)
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()`
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Cross-Origin-Resource-Policy: same-origin`
+
+## Deployment
+
+GitHub Pages publishes the `/docs` folder of the `prod` branch (Settings > Pages > Deploy from a branch). `docs/CNAME` sets the custom domain, and Cloudflare provides DNS. `prod` is the default branch. Changes reach it only through an approved pull request, and the site updates a few minutes after a merge.
+
+To help search engines find the site, submit `https://90days.alltripsconsidered.com/sitemap.xml` in [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters).
 
 ## Roadmap
 
-Planned work for the Schengen 90/180 Calculator, in suggested order.
-
 ### Owner tasks
-
 These need the site owner's accounts or approval.
 
-- [ ] **Confirm the GitHub Pages source.** Settings > Pages should publish the `/docs` folder of `prod`, so changes go live only after a merge is approved.
-- [ ] **Submit the sitemap to search engines.** Add the site to [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters), then submit `https://90days.alltripsconsidered.com/sitemap.xml`.
+- [ ] **Submit the sitemap to search engines.** Add the site to Google Search Console and Bing Webmaster Tools, then submit the sitemap (see Deployment).
 
 ### Features
-
 - [ ] **Import a saved record.** Let visitors load a JSON export back into the calculator, so trips survive clearing the browser or switching phones. This is the most important gap, since trips are otherwise stored only in one browser.
 - [ ] **"Still in Schengen" option.** A checkbox on a trip that counts up to today and updates daily, so travelers in Europe do not have to guess a departure date.
 
 ### Quality and operations
-
-- [ ] **Privacy-friendly visitor statistics.** Consider a cookie-free tool such as Plausible or GoatCounter to see how many people use the site and which features they use. Update `privacy.html` first to explain what is collected.
+- [ ] **Privacy-friendly visitor statistics.** Consider a cookie-free tool such as Plausible or GoatCounter to see how many people use the site and which features they use. Update `docs/privacy.html` first to explain what is collected.
 
 ### Recurring
-
-- [ ] **Review the Schengen rules every few months.** Check the member list (Cyprus is working toward joining), the Entry/Exit System, and related rules. Update `js/countries.js` if membership changes, and update the "Rules last checked" date in the footer of `index.html`.
+- [ ] **Review the Schengen rules every few months.** Check the member list (Cyprus is working toward joining), the Entry/Exit System, and related rules. See "Reviewing the Schengen rules" under Making changes.
 
 ### Considered and set aside
-
 - **Sign in with Apple or Google, with iCloud or Google Drive sync.** Reviewed in November 2026 and not pursued for now. Google Drive sync would need a Google Cloud project and Google's review of the app's name and logo, and sign-in does not work in in-app browsers. iCloud sync would need the Apple Developer Program ($99 per year) and CloudKit JS, which gets limited support for the web. Either would also replace the "no accounts" promise in the privacy page. If cloud storage comes up again, the simplest path is Import plus the phone's own Save to Files, which already reaches iCloud Drive and Google Drive with no sign-in.
 
 ### Done
-
-- [x] Privacy page (`privacy.html`), linked from the footer
+- [x] Privacy page, linked from the footer
 - [x] Dates, times, and numbers shown in the device's own format
-- [x] Fields and buttons aligned at every screen width, and an Add to Home Screen reminder where downloads are blocked
-- [x] One shared country list (`js/countries.js`) and versioned saved data with automatic upgrades
-- [x] Old feature branches deleted on GitHub; only `claude/peaceful-rubin-dyhyh5` and `prod` remain
+- [x] One shared country list and versioned saved data with automatic upgrades
 - [x] "Rules last checked" note explaining which countries are not included and the Entry/Exit System
-- [x] Travel Tools links to the other All Trips Considered tools: buttons on desktop, a list on phones
-- [x] Search and sharing properties refreshed on both pages (title, description, share tags, structured data with feature list, topic, and modified dates)
+- [x] Travel Tools links to the other All Trips Considered tools
+- [x] Search and sharing properties refreshed on both pages
 - [x] Add to Home Screen banner: Close hides it for 24 hours
 - [x] Security hardening: self-hosted fonts, strict Content-Security-Policy with Trusted Types, no inline code or HTML strings
 
@@ -187,4 +202,9 @@ These need the site owner's accounts or approval.
 
 This tool provides general information only and is not legal advice. Official border authorities make the final determination of a traveler's permitted stay.
 
-© All Trips Considered. All rights reserved.
+## Credits and licenses
+
+- **Font:** Instrument Serif, self-hosted under the SIL Open Font License (`docs/fonts/OFL.txt`).
+- **Map data:** Natural Earth (public domain), through the `world-atlas` package, used only by `tools/build-map.js`.
+
+© 2026 All Trips Considered. All rights reserved.
