@@ -93,9 +93,7 @@ sw.js                  Service worker for offline use (must stay at the root)
 manifest.webmanifest   App name, colors, and icons for installing
 icons/, favicon.ico    App icons and favicons
 fonts/                 Instrument Serif (self-hosted) and its license
-js/footer.js           Copyright year on pages without the full calculator
 _headers               Security and cache headers (Cloudflare Pages, Netlify)
-tests/calc.test.js     Unit tests
 tools/build-map.js     Rebuilds the map from Natural Earth data
 CNAME                  Custom domain for GitHub Pages
 robots.txt, sitemap.xml  Search engine crawling and sitemap
@@ -110,14 +108,6 @@ python3 -m http.server 8000
 ```
 
 Then visit http://localhost:8000. Use a local server rather than opening `index.html` directly, so offline support and installing work.
-
-## Tests
-
-```bash
-node --test tests/calc.test.js
-```
-
-The tests cover the 180-day window, the status levels, overlapping trips, every export format, upgrading older saved trips (including damaged data), unique country codes, and checks that every Schengen country appears on the map and has a color scheme.
 
 ## Publishing
 
@@ -140,7 +130,7 @@ When changing any file the offline app uses, increase the version number in the 
 
 ## Maintenance notes
 
-- **Adding or removing a Schengen country:** edit `js/countries.js` (code, names, flag, and colors in one place), then rebuild the map. The tests fail if a country is missing from the map, has no colors, or has a bad code. Never change an existing country's code, since saved trips use it.
+- **Adding or removing a Schengen country:** edit `js/countries.js` (code, names, flag, and colors in one place), then rebuild the map. Never change an existing country's code, since saved trips use it.
 - **Rebuilding the map:**
 
   ```bash
@@ -148,7 +138,7 @@ When changing any file the offline app uses, increase the version number in the 
   ```
 
   Then replace the SVG between the `MAP START` and `MAP END` comments in `index.html` with `tools/europe-map.svg`.
-- **Search engines:** the title, description, canonical address, share tags (Open Graph and X), share image (`icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `index.html` and `privacy.html`. The main page describes the organization, the site, and the app with its feature list; keep that list in step with new features. Keep titles under about 60 characters so search results do not cut them off. After a change worth re-indexing, update `lastmod` in `sitemap.xml` for each page that changed, `dateModified` in that page's structured data, and the visible "Last updated" date on the privacy page if its text changed.
+- **Search engines:** the title, description, canonical address, share tags (Open Graph and X), share image (`icons/og-image.png`, 1200 × 630), and structured data are in the `<head>` of `index.html`. The main page describes the organization, the site, and the app with its feature list; keep that list in step with new features. Keep titles under about 60 characters so search results do not cut them off. After a change worth re-indexing, update `lastmod` in `sitemap.xml` for each page that changed, `dateModified` in that page's structured data, and the visible "Last updated" date on the privacy page if its text changed.
 - **Map data:** Natural Earth (public domain), through the `world-atlas` package.
 
 ## Roadmap
@@ -169,7 +159,6 @@ These need the site owner's accounts or approval.
 
 ### Quality and operations
 
-- [ ] **Automatic test runs.** A GitHub Actions check that runs `node --test tests/calc.test.js` on every push, so a broken change is caught before it reaches `prod`.
 - [ ] **Privacy-friendly visitor statistics.** Consider a cookie-free tool such as Plausible or GoatCounter to see how many people use the site and which features they use. Update `privacy.html` first to explain what is collected.
 
 ### Recurring
