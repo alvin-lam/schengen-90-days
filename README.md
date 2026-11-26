@@ -209,6 +209,8 @@ This tool provides general information only and is not legal advice. Official bo
 - **Font:** Instrument Serif, self-hosted under the SIL Open Font License (`docs/fonts/OFL.txt`).
 - **Map data:** Natural Earth (public domain), through the `world-atlas` package, used only by `tools/build-map.js`.
 
-<img src="docs/icons/icon-512.png" alt="Schengen 90/180 Calculator app icon" width="96" height="96">
+<p align="center">
+  <img src="docs/icons/icon-512.png" alt="Schengen 90/180 Calculator app icon" width="96" height="96">
+</p>
 
-© 2026 All Trips Considered. All rights reserved.
+<p align="center">© 2026 All Trips Considered. All rights reserved.</p>
