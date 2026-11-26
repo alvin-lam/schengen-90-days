@@ -4,6 +4,8 @@ A free web app from [All Trips Considered](https://alltripsconsidered.com) that 
 
 Live site: https://90days.alltripsconsidered.com/
 
+![Schengen 90/180 Calculator link preview](docs/icons/og-image.png)
+
 ## Features
 
 ### Counting days
@@ -206,5 +208,7 @@ This tool provides general information only and is not legal advice. Official bo
 
 - **Font:** Instrument Serif, self-hosted under the SIL Open Font License (`docs/fonts/OFL.txt`).
 - **Map data:** Natural Earth (public domain), through the `world-atlas` package, used only by `tools/build-map.js`.
+
+<img src="docs/icons/icon-512.png" alt="Schengen 90/180 Calculator app icon" width="96" height="96">
 
 © 2026 All Trips Considered. All rights reserved.
