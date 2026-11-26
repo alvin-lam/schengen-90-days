@@ -1,6 +1,6 @@
 /*
  * Export helpers: turn the visitor's trips into CSV, JSON, or plain text.
- * Pure functions, so they run the same in the browser and in Node tests.
+ * Pure functions, so they run the same in the browser and in Node.
  */
 (function (root) {
   "use strict";
@@ -66,7 +66,7 @@
   }
 
   /** A readable summary for notes, email, or printing. */
-  // Plain formatting used when no device formatter is given (tests, Node).
+  // Plain formatting used when no device formatter is given (Node).
   var PLAIN = {
     date: function (iso) { return iso; },
     dateTime: function (ts) { return ts.slice(0, 16).replace("T", " ") + " UTC"; },
