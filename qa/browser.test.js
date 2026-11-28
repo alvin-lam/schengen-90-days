@@ -202,6 +202,45 @@ test("a check date year below 100 does not break the page or Export", async (t) 
   assert.match(csv.name, /^schengen-trips-\d{4}-\d{2}-\d{2}\.csv$/);
 });
 
+test("typing an entry date on the keyboard fills the departure with the finished date", async (t) => {
+  const { page } = await open(t);
+  await setCheckDate(page, "2026-11-28");
+  await page.click("#add-trip");
+  const trip = page.locator("#trip-list > li").last();
+  await trip.locator(".trip-country").selectOption("DE");
+  await trip.locator(".trip-entry").click();
+  await page.keyboard.type("11012026");
+  await trip.locator(".trip-entry").blur();
+  assert.equal(await trip.locator(".trip-entry").inputValue(), "2026-11-01");
+  assert.equal(await trip.locator(".trip-exit").inputValue(), "2026-11-01", "never year 0002");
+  assert.equal(await totalDays(page), "1");
+});
+
+test("a trip date with an impossible year says so", async (t) => {
+  const { page } = await open(t);
+  await setCheckDate(page, "2026-11-28");
+  const trip = await addTrip(page, "FR", "0026-11-01", "2026-11-10");
+  assert.ok(await trip.locator(".trip-error").isVisible());
+  assert.match(await trip.locator(".trip-error").textContent(), /entry date can't be used/);
+});
+
+test("an impossible check date says it counts to today", async (t) => {
+  const { page } = await open(t, { saved: v2([["DE", "2026-03-01", "2026-03-10"]]) });
+  await setCheckDate(page, "0099-06-30");
+  assert.ok(await page.isVisible("#check-date-error"));
+  await setCheckDate(page, "2026-06-30");
+  assert.ok(await page.isHidden("#check-date-error"));
+});
+
+test("a check date being typed is never overwritten by today", async (t) => {
+  const { page } = await open(t);
+  await setCheckDate(page, "2026-02-01");
+  await page.locator("#reference-date").click();
+  await page.keyboard.press("Backspace"); // clears one part, so the value is empty while typing
+  await page.evaluate(() => { window.dispatchEvent(new Event("focus")); document.dispatchEvent(new Event("visibilitychange")); });
+  assert.equal(await page.inputValue("#reference-date"), "");
+});
+
 test("picking an entry date fills an empty departure date", async (t) => {
   const { page } = await open(t);
   const trip = await addTrip(page, "PT", "2026-04-04");
@@ -290,6 +329,46 @@ test("two open tabs keep each other's trips", async (t) => {
   const codes = await a.locator(".trip-country").evaluateAll((els) => els.map((e) => e.value));
   await context.close();
   assert.deepEqual(codes, ["DE", "FR"]);
+});
+
+test("another tab's save waits while a date is being typed, and nothing is lost", async (t) => {
+  const context = await browser.newContext();
+  const a = await context.newPage();
+  const b = await context.newPage();
+  await a.goto(base);
+  await b.goto(base);
+  await setCheckDate(a, "2026-11-28");
+  await a.click("#add-trip");
+  const row = a.locator("#trip-list > li").last();
+  await row.locator(".trip-country").selectOption("IT");
+  await row.locator(".trip-entry").click();
+  await a.keyboard.type("1110"); // month and day, year still to come
+  await addTrip(b, "FR", "2026-02-01", "2026-02-02");
+  await a.waitForTimeout(200);
+  await a.keyboard.type("2026");
+  await row.locator(".trip-entry").blur();
+  await a.waitForFunction(() => document.querySelectorAll("#trip-list > li").length === 2);
+  const stored = JSON.parse(await a.evaluate(() => localStorage.getItem("schengen-90-180-trips")));
+  await context.close();
+  const it = stored.trips.find((x) => x.country === "IT");
+  assert.equal(it.entry, "2026-11-10", "the half-typed date is kept");
+  assert.ok(stored.trips.some((x) => x.country === "FR"), "the other tab's trip is kept");
+});
+
+test("Clear all resets when another tab changes the trips", async (t) => {
+  const context = await browser.newContext();
+  const a = await context.newPage();
+  const b = await context.newPage();
+  await a.addInitScript(() => { if (!sessionStorage.getItem("s")) { localStorage.setItem("schengen-90-180-trips", JSON.stringify({ version: 2, trips: [{ id: "a", country: "DE", entry: "2026-01-01", exit: "2026-01-01" }] })); sessionStorage.setItem("s", "1"); } });
+  await a.goto(base);
+  await b.goto(base);
+  await a.click("#clear-all");
+  await b.click("#clear-all");
+  await b.click("#clear-all");
+  await a.waitForFunction(() => document.querySelectorAll("#trip-list > li").length === 0);
+  const label = (await a.textContent("#clear-all")).trim();
+  await context.close();
+  assert.equal(label, "Clear all trips");
 });
 
 test("Clear all needs a second click and resets after 4 seconds", async (t) => {
@@ -418,6 +497,46 @@ test("no sideways scrolling on phones, tablets, or desktops, in light and dark",
       assert.ok(over.scroll <= 0, `${colorScheme} ${width}px scrolls sideways by ${over.scroll}px: ${over.wide.join(", ")}`);
     }
   }
+});
+
+test("white button text passes 4.5:1 in every color scheme, in light and dark", async (t) => {
+  const { page } = await open(t, { colorScheme: "dark" });
+  const failing = await page.evaluate(() => {
+    function lum(rgb) {
+      return rgb.match(/\d+/g).slice(0, 3).map(Number).map((c) => c / 255)
+        .map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)))
+        .reduce((s, c, i) => s + c * [0.2126, 0.7152, 0.0722][i], 0);
+    }
+    const out = [];
+    const btn = document.getElementById("add-trip");
+    for (const mode of ["light", "dark"]) {
+      window.SchengenTheme.set(mode);
+      for (const s of window.SchengenScheme.SCHEMES) {
+        window.SchengenScheme.choose(s.id);
+        const cs = getComputedStyle(btn);
+        const ratio = (lum(cs.color) + 0.05) / (lum(cs.backgroundColor) + 0.05);
+        if (ratio < 4.5) out.push(mode + " " + s.id + " " + ratio.toFixed(2));
+      }
+    }
+    return out;
+  });
+  assert.deepEqual(failing, []);
+});
+
+test("Appearance choices stay checked when storage is blocked", async (t) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "localStorage", { get() { throw new DOMException("blocked", "SecurityError"); } });
+  });
+  await page.goto(base);
+  await page.click("#appearance-button");
+  await page.check('input[name="mode"][value="dark"]');
+  await page.locator('input[name="scheme"][value="IT"]').check({ force: true });
+  const mode = await page.locator('input[name="mode"]:checked').getAttribute("value");
+  const scheme = await page.locator('input[name="scheme"]:checked').getAttribute("value");
+  await context.close();
+  assert.deepEqual([mode, scheme], ["dark", "IT"]);
 });
 
 test("every button and link has a name", async (t) => {

@@ -179,8 +179,9 @@
       </div>
       <label class="field">
         <span>Count the 180 days ending on</span>
-        <input type="date" id="reference-date">
+        <input type="date" id="reference-date" aria-describedby="check-date-error">
       </label>
+      <p id="check-date-error" class="field-error" aria-live="polite" hidden></p>
       <p class="hint">Defaults to today. Pick a future date to plan an upcoming trip.</p>
     </section>
     </div>
@@ -260,7 +261,7 @@
       <p class="hint export-hint">Download your trips and totals. The file is created on your device and is not uploaded anywhere.</p>
       <div class="export-row">
         <div class="menu-wrap">
-          <button type="button" id="export-download" class="btn btn-primary menu-button" aria-haspopup="menu" aria-expanded="false" aria-controls="export-menu">Download <svg class="menu-chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" id="export-download" class="btn btn-primary menu-button" aria-haspopup="menu" aria-expanded="false" aria-controls="export-menu" aria-label="Download your record">Download <svg class="menu-chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <div id="export-menu" class="format-menu" role="menu" aria-labelledby="export-download" hidden>
             <button type="button" role="menuitem" data-format="csv"><strong>CSV</strong></button>
             <button type="button" role="menuitem" data-format="json"><strong>JSON</strong></button>
@@ -318,7 +319,7 @@
         <span class="trip-days-value">0</span>
       </div>
       <button type="button" class="btn btn-remove" aria-label="Remove trip">Remove</button>
-      <p class="trip-error" hidden>Departure date must be on or after the entry date.</p>
+      <p class="trip-error" aria-live="polite" hidden></p>
     </li>
   </template>
 

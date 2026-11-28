@@ -21,6 +21,25 @@
     return "#" + [mix(r), mix(g), mix(b)].map(function (c) { return c.toString(16).padStart(2, "0"); }).join("");
   }
 
+  // WCAG contrast of a hex color against white.
+  function contrastWithWhite(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    var l = [n >> 16, (n >> 8) & 255, n & 255].map(function (c) {
+      c /= 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 1.05 / (0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2] + 0.05);
+  }
+  // Dark mode buttons: lighten the color for the dark page, but only as far
+  // as white button text keeps a 4.5:1 contrast.
+  function darkButton(hex) {
+    for (var amount = 0.25; amount > 0; amount -= 0.01) {
+      var c = tint(hex, amount);
+      if (contrastWithWhite(c) >= 4.5) return c;
+    }
+    return hex;
+  }
+
   function find(id) {
     for (var i = 0; i < SCHEMES.length; i++) if (SCHEMES[i].id === id) return SCHEMES[i];
     return SCHEMES[0];
@@ -34,7 +53,7 @@
       names.forEach(function (n) { style.removeProperty(n); });
     } else {
       style.setProperty("--scheme-primary", s.primary);
-      style.setProperty("--scheme-primary-dark", tint(s.primary, 0.25));
+      style.setProperty("--scheme-primary-dark", darkButton(s.primary));
       style.setProperty("--scheme-link", s.primary);
       style.setProperty("--scheme-link-dark", tint(s.primary, 0.5));
       style.setProperty("--scheme-map", s.map);
@@ -47,9 +66,12 @@
     return s;
   }
 
+  // The choice for this visit, used when storage is blocked.
+  var memory = null;
+
   function saved() {
     var v;
-    try { v = localStorage.getItem(KEY) || "europe"; } catch (e) { return "europe"; }
+    try { v = localStorage.getItem(KEY) || "europe"; } catch (e) { return memory || "europe"; }
     // Older saves used lowercase English names ("germany"); upgrade them to codes.
     if (v !== "europe" && !K.byCode(v)) {
       var c = K.byName(v);
@@ -61,6 +83,7 @@
 
   function choose(id) {
     var s = apply(id);
+    memory = s.id;
     try { localStorage.setItem(KEY, s.id); } catch (e) { /* lasts for this visit only */ }
     return s;
   }

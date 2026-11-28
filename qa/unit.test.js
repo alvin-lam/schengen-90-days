@@ -92,6 +92,13 @@ test("toDayNumber accepts only the YYYY-MM-DD form a date field produces", () =>
   }
 });
 
+test("only years 1900 to 2999 count, so half-typed years never do", () => {
+  for (const bad of ["0002-11-01", "0020-11-01", "0202-11-01", "1899-12-31", "3000-01-01", "9999-12-31"]) {
+    assert.ok(!C.isUsableDate(bad), bad);
+  }
+  for (const ok of ["1900-01-01", "2026-11-01", "2999-12-31"]) assert.ok(C.isUsableDate(ok), ok);
+});
+
 test("todayIso is YYYY-MM-DD", () => {
   assert.match(C.todayIso(), /^\d{4}-\d{2}-\d{2}$/);
 });
@@ -212,6 +219,13 @@ test("junk saves never throw", () => {
     assert.doesNotThrow(() => C.upgradeSaved(junk), JSON.stringify(junk));
     assert.ok(Array.isArray(C.upgradeSaved(junk).trips));
   }
+});
+
+test("duplicate saved ids are replaced, so every trip has its own", () => {
+  const t = C.upgradeSaved([{ id: "same", country: "DE" }, { id: "same", country: "FR" }, { id: "x" }]).trips;
+  assert.equal(new Set(t.map((x) => x.id)).size, 3);
+  assert.equal(t[0].id, "same");
+  assert.equal(t[2].id, "x");
 });
 
 test("trip ids are unique", () => {

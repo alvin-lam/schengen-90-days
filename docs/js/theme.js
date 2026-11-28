@@ -11,12 +11,15 @@
   var html = document.documentElement;
   var media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 
+  // The choice for this visit, used when storage is blocked.
+  var memory = null;
+
   function get() {
     try {
       var v = localStorage.getItem(KEY);
       return v === "light" || v === "dark" ? v : "auto";
     } catch (e) {
-      return "auto";
+      return memory || "auto";
     }
   }
 
@@ -27,6 +30,7 @@
 
   function set(mode) {
     apply(mode);
+    memory = mode;
     try {
       if (mode === "auto") localStorage.removeItem(KEY);
       else localStorage.setItem(KEY, mode);

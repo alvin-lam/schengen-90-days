@@ -8,6 +8,9 @@
 
   var MS_PER_DAY = 24 * 60 * 60 * 1000;
   var WINDOW_DAYS = 180;
+  // Years a real trip can have. Anything else is a typo or a year still being
+  // typed (date fields report 0002, 0020, 0202 on the way to 2026).
+  var MIN_YEAR = 1900, MAX_YEAR = 2999;
 
   var K = (typeof module !== "undefined" && module.exports)
     ? require("./countries.js")
@@ -26,6 +29,7 @@
     if (!/^\d{4}-\d{2}-\d{2}$/.test(String(isoDate))) return NaN;
     var parts = String(isoDate).split("-");
     var y = Number(parts[0]), m = Number(parts[1]), d = Number(parts[2]);
+    if (y < MIN_YEAR || y > MAX_YEAR) return NaN;
     var ms = Date.UTC(y, m - 1, d);
     var check = new Date(ms);
     if (check.getUTCFullYear() !== y || check.getUTCMonth() !== m - 1 || check.getUTCDate() !== d) {
@@ -131,6 +135,7 @@
    */
   function upgradeSaved(raw) {
     var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.trips) ? raw.trips : []);
+    var seen = Object.create(null);
     var trips = list.filter(function (t) { return t && typeof t === "object"; }).map(function (t) {
       var code = "";
       if (typeof t.country === "string" && t.country) {
@@ -138,7 +143,8 @@
         code = c ? c.code : "";
       }
       return {
-        id: typeof t.id === "string" && t.id ? t.id : newTripId(),
+        // Every trip needs its own id: the page finds trips by id.
+        id: typeof t.id === "string" && t.id && !seen[t.id] ? (seen[t.id] = true, t.id) : newTripId(),
         country: code,
         entry: cleanDate(t.entry),
         exit: cleanDate(t.exit)
@@ -157,6 +163,8 @@
     countryLabel: countryLabel,
     WINDOW_DAYS: WINDOW_DAYS,
     toDayNumber: toDayNumber,
+    /** True for a YYYY-MM-DD date the counter can use. */
+    isUsableDate: function (iso) { return !isNaN(toDayNumber(iso)); },
     toIsoDate: toIsoDate,
     todayIso: todayIso,
     daysInWindow: daysInWindow,
