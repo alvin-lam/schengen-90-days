@@ -89,6 +89,12 @@ README.md                     This file
 tools/build-map.js            Rebuilds the map from Natural Earth data
 tools/europe-map.svg          The map that build-map.js generates
 tools/package.json            Dependencies for the map builder
+qa/run.js                     QC runner: logic tests, static audit, and browser tests
+qa/unit.test.js               Day counting, saved data, and export tests (no dependencies)
+qa/audit.js                   Checks files, cache list, CSP, map, and search data against each other
+qa/browser.test.js            Playwright tests of the real page, including offline and phone widths
+.claude/agents/qc-bug-hunter.md   Claude Code agent that runs QC and hunts for bugs past it
+.github/workflows/qc.yml      Runs QC on every pull request to prod
 ```
 
 ### Saved data
@@ -111,6 +117,22 @@ python3 -m http.server 8000 --directory docs
 ```
 
 Open http://localhost:8000.
+
+## Quality checks
+
+Run every check before opening a pull request:
+
+```bash
+node qa/run.js
+```
+
+- **Logic tests** cover day counting, status levels, saved-data upgrades, and exports. They run in five time zones, because a count must never depend on the device's zone.
+- **Static audit** checks that every linked file exists, the `sw.js` cache list and version are current, the CSP matches on both pages and in the README, no forbidden HTML sinks are used, and every country has a map shape.
+- **Browser tests** drive the page in headless Chromium: adding and removing trips, status changes, saved data, downloads, menus, themes, phone widths, in-app browsers, and offline use. Any console error or CSP violation fails a test.
+
+The browser tests need Playwright once: `cd qa && npm install && npx playwright install chromium`. Use `node qa/run.js --quick` to skip them. The same checks run on every pull request to `prod`.
+
+In Claude Code, ask for the **qc-bug-hunter** agent to run the suite, read the diff, probe the page for bugs the tests miss, and return a ranked report.
 
 ## Making changes
 
