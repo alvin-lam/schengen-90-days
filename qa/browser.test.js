@@ -697,6 +697,6 @@ test("the installed app opens offline", async (t) => {
   const fontOk = await page.evaluate(() => document.fonts.load('46px "Instrument Serif"').then((f) => f.length > 0));
   assert.ok(fontOk, "the title font is available offline");
   await page.goto(base + "privacy.html");
-  assert.match(await page.title(), /Privacy/i);
+  assert.equal((await page.textContent("h1")).trim(), "Privacy");
   await context.setOffline(false);
 });
