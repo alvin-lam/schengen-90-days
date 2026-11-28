@@ -93,7 +93,7 @@ qa/run.js                     QC runner: logic tests, static audit, and browser 
 qa/unit.test.js               Day counting, saved data, and export tests (no dependencies)
 qa/audit.js                   Checks files, cache list, CSP, map, and search data against each other
 qa/browser.test.js            Playwright tests of the real page, including offline and phone widths
-.claude/agents/qc-bug-hunter.md   Claude Code agent that runs QC and hunts for bugs past it
+.claude/agents/qc-bug-hunter.md   QC & Bug Hunter: on-demand Claude Code agent that runs seven checks and writes a report
 .github/workflows/qc.yml      Runs QC on every pull request to prod
 ```
 
@@ -132,7 +132,7 @@ node qa/run.js
 
 The browser tests need Playwright once: `cd qa && npm install && npx playwright install chromium`. Use `node qa/run.js --quick` to skip them. The same checks run on every pull request to `prod`.
 
-In Claude Code, ask for the **qc-bug-hunter** agent to run the suite, read the diff, probe the page for bugs the tests miss, and return a ranked report.
+In Claude Code, ask for a QC pass to run the **QC & Bug Hunter** agent (`.claude/agents/qc-bug-hunter.md`). It runs the suite, then works through seven checks: display and accessibility, day counting, Schengen rule changes, saved data and exports, offline and security, edge cases, and whether this README matches the behavior. It never edits files. Its report groups findings by check, gives each one steps, expected and actual results, evidence, and a confidence level, and ends with what could not be verified and what passed. Name checks by number to run only those, for example "QC checks 2 and 3".
 
 ## Making changes
 
