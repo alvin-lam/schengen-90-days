@@ -182,22 +182,76 @@ the banner's 24-hour Close, the footer contents, privacy, and the security
 rules. Report each claim that no longer matches, with the README line and
 what the site actually does.
 
+## Evidence
+
+Save a screenshot for each display or behavior finding, as PNG at
+`deviceScaleFactor: 2`. Save them in the evidence folder the request names.
+If none is named, use `qc-evidence/` inside the caller's scratchpad or, failing
+that, a new folder from `mktemp -d`. Never delete the evidence folder in
+cleanup. Name each file after its finding, for example
+`remove-focus-lost.png`.
+
 ## Report
 
-Start with one line: `QC result: PASS` or `QC result: FAIL`, followed by the
-`qa/run.js` summary counts.
+The calling session turns this report into a published web page titled
+"Schengen Calculator QC Report", in the same layout as the Points Calculator
+QC Report. Write the sections below in this order, with these exact headings,
+so the page can be built from them.
 
-Group findings under the seven check headings. Within each group, rank from
-most to least severe, and put anything that could give a traveler a wrong
-day count first. For each finding give:
-- the file and line (`path:line`) or the page and control;
-- the steps or input that trigger it;
-- the expected result and the actual result;
-- the evidence: a run, a screenshot path, or a quoted source with URL;
+### Header
+One line each: the run date, the branch and commit tested, and the
+`qa/run.js` result as `QC result: PASS` or `QC result: FAIL` with its counts.
+
+### tl;dr
+Three lists, written for the site owner, not a developer.
+- **What is working**: 5 to 7 bullets, each with a number where possible,
+  for example "18 of 18 counting scenarios matched the hand count".
+- **What is not working**: one bullet per real problem, most harmful first.
+  Put the problem in bold, then one plain sentence on what a visitor sees.
+- **What you need to do**: a numbered list of actions only a person can do.
+  Examples: approve fixes, confirm a rule change on an official site, check
+  blocked sources by hand, make a product decision, update the "Rules last
+  checked" date, or merge a pull request. Leave out work the agent or a
+  developer session can do alone.
+
+### Stats
+4 to 6 headline numbers, each with a short label, for example
+"18 / 18 counting scenarios matched" or "2 high-severity bugs".
+
+### Fix these first
+Up to six findings most likely to give a traveler a wrong day count or lose
+their trips. Each gets a severity and a two-sentence summary.
+
+### Check sections
+One section per check, headed "Check N" and the check's name, with one line
+on what was covered. For each finding give:
+- severity: High (a wrong count, lost data, or a broken core feature),
+  Medium (a real bug with a workaround) or Low (minor or cosmetic);
 - confidence: "Confirmed" (reproduced) or "Likely" (from reading code or a
-  source).
+  source);
+- Where: the file and line (`path:line`) or the page and control;
+- Steps: the input or actions that trigger it;
+- Expected and Actual;
+- Evidence: the screenshot file name, a command, or a quoted source with URL.
 
-Write plainly, in short sentences. Leave out style opinions. Then add a
-"Could not verify" list and a short summary of what passed, for example
-"18 of 18 counting scenarios matched" or "29 of 29 members confirmed".
-Finally, stop the web server and delete the temporary directory.
+Group several small issues of the same kind into one finding with a list.
+End each section with a "Passed" list of what was checked and held.
+
+For check 3, give the rule changes as a table with columns Item, What
+changed, Severity and confidence, and Source (with URL). Add a "Coming soon"
+table of dated future changes, such as the ETIAS start or a country's
+joining date, and a "No changes found" note for what still matches.
+
+For check 7, give a table with columns README line, README says, and The
+site actually. Then one line listing the claims that passed.
+
+If you discarded a finding after checking it, list it under "Findings
+rejected after checking" with the reason.
+
+### Could not verify
+Blocked or partial sources, browsers not tested, and anything else left
+unchecked, with the reason.
+
+Write plainly, in short sentences, with no em dashes. Leave out style
+opinions. Finally, stop the web server and delete the temporary directory,
+but keep the evidence folder.

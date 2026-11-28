@@ -132,7 +132,7 @@ node qa/run.js
 
 The browser tests need Playwright once: `cd qa && npm install && npx playwright install chromium`. Use `node qa/run.js --quick` to skip them. The same checks run on every pull request to `prod`.
 
-In Claude Code, ask for a QC pass to run the **QC & Bug Hunter** agent (`.claude/agents/qc-bug-hunter.md`). It runs the suite, then works through seven checks: display and accessibility, day counting, Schengen rule changes, saved data and exports, offline and security, edge cases, and whether this README matches the behavior. It never edits files. Its report groups findings by check, gives each one steps, expected and actual results, evidence, and a confidence level, and ends with what could not be verified and what passed. Name checks by number to run only those, for example "QC checks 2 and 3".
+In Claude Code, ask for a QC pass to run the **QC & Bug Hunter** agent (`.claude/agents/qc-bug-hunter.md`). It runs the suite, then works through seven checks: display and accessibility, day counting, Schengen rule changes, saved data and exports, offline and security, edge cases, and whether this README matches the behavior. It never edits files. Its report opens with a tl;dr of what is working, what is not, and what you need to do, then a "Fix these first" list and one section per check. Each finding has a severity, a confidence level, steps, expected and actual results, and a screenshot or source. The report is published as a private "Schengen Calculator QC Report" page, in the same layout as the Points Calculator QC Report. Name checks by number to run only those, for example "QC checks 2 and 3".
 
 ## Making changes
 
