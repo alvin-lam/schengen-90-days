@@ -86,6 +86,12 @@ test("toDayNumber rejects two-digit years that Date.UTC would shift to 19xx", ()
   assert.ok(Number.isNaN(C.toDayNumber("0099-05-01")));
 });
 
+test("toDayNumber accepts only the YYYY-MM-DD form a date field produces", () => {
+  for (const bad of ["2026-5-1", "1e3-01-01", "0x7EA-05-01", " 2026-05-01", "2026-05-01 ", "+2026-05-01"]) {
+    assert.ok(Number.isNaN(C.toDayNumber(bad)), "should reject " + JSON.stringify(bad));
+  }
+});
+
 test("todayIso is YYYY-MM-DD", () => {
   assert.match(C.todayIso(), /^\d{4}-\d{2}-\d{2}$/);
 });
@@ -152,6 +158,15 @@ test("classic rolling-window example: 90 days, then the earliest days roll off",
   assert.equal(total(t, "2026-09-27"), 0);
 });
 
+test("an invalid check date counts nothing and never throws", () => {
+  for (const bad of ["", "0099-01-05", "garbage"]) {
+    const r = C.daysInWindow([trip("2026-03-01", "2026-03-02")], bad);
+    assert.equal(r.total, 0);
+    assert.deepEqual(r.perTrip, [0]);
+  }
+  assert.doesNotThrow(() => X.buildRecord([trip("2026-03-01", "2026-03-02")], "0099-01-05", new Date()));
+});
+
 /* ---------- Status levels ---------- */
 
 test("status boundaries match the README table", () => {
@@ -175,6 +190,16 @@ test("version 1 saves (English names) upgrade to codes", () => {
   assert.equal(out.trips[1].country, "");
   assert.equal(out.trips[1].exit, "", "non-string dates are cleared");
   assert.ok(out.trips[0].id);
+});
+
+test("saved dates a date field cannot show are cleared", () => {
+  const t = C.upgradeSaved([{ country: "DE", entry: "2026-5-1", exit: "1e3-01-01" }, { country: "FR", entry: "2026-02-30", exit: "2026-03-01" }]).trips;
+  assert.deepEqual([t[0].entry, t[0].exit, t[1].entry, t[1].exit], ["", "", "", "2026-03-01"]);
+});
+
+test("prototype names and non-string countries become an empty choice", () => {
+  const t = C.upgradeSaved([{ country: "__proto__" }, { country: "constructor" }, { country: "toString" }, { country: ["DE"] }, { country: 7 }]).trips;
+  assert.deepEqual(t.map((x) => x.country), ["", "", "", "", ""]);
 });
 
 test("version 2 saves pass through unchanged", () => {

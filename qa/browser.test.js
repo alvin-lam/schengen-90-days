@@ -159,6 +159,49 @@ test("a departure before entry is flagged and counts zero", async (t) => {
   assert.equal(await totalDays(page), "0");
 });
 
+test("a trip missing a departure or entry date says so", async (t) => {
+  const { page } = await open(t, { saved: v2([["DE", "2026-05-01", "2026-05-10"]]) });
+  await setCheckDate(page, "2026-05-31");
+  const trip = page.locator("#trip-list > li").first();
+  await trip.locator(".trip-exit").fill("");
+  assert.ok(await trip.locator(".trip-error").isVisible());
+  assert.match(await trip.locator(".trip-error").textContent(), /Add a departure date/);
+  await trip.locator(".trip-exit").fill("2026-05-10");
+  assert.ok(await trip.locator(".trip-error").isHidden());
+  assert.equal(await totalDays(page), "10");
+});
+
+test("the default check date moves to the new day at midnight", async (t) => {
+  const context = await browser.newContext({ timezoneId: "Europe/Berlin" });
+  const page = await context.newPage();
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.clock.install({ time: new Date("2026-03-31T23:59:00+02:00") });
+  await page.addInitScript(() => localStorage.setItem("schengen-90-180-trips",
+    JSON.stringify({ version: 2, trips: [{ id: "a", country: "DE", entry: "2026-01-01", exit: "2026-04-30" }] })));
+  await page.goto(base);
+  assert.equal(await page.inputValue("#reference-date"), "2026-03-31");
+  assert.equal(await totalDays(page), "90");
+  await page.clock.fastForward("02:00");
+  assert.equal(await page.inputValue("#reference-date"), "2026-04-01");
+  assert.equal(await totalDays(page), "91");
+  assert.ok(await page.isVisible("#lawyer-warning"));
+  // A date the visitor picked stays put.
+  await setCheckDate(page, "2026-02-01");
+  await page.clock.fastForward("24:00:00");
+  assert.equal(await page.inputValue("#reference-date"), "2026-02-01");
+  await context.close();
+  assert.deepEqual(errors, []);
+});
+
+test("a check date year below 100 does not break the page or Export", async (t) => {
+  const { page } = await open(t, { saved: v2([["DE", "2026-03-01", "2026-03-10"]]) });
+  await setCheckDate(page, "0099-01-05");
+  assert.doesNotMatch(await page.textContent("#window-range"), /Invalid/);
+  const csv = await download(page, "#export-download", "csv");
+  assert.match(csv.name, /^schengen-trips-\d{4}-\d{2}-\d{2}\.csv$/);
+});
+
 test("picking an entry date fills an empty departure date", async (t) => {
   const { page } = await open(t);
   const trip = await addTrip(page, "PT", "2026-04-04");
@@ -219,6 +262,34 @@ test("Remove deletes the right trip and keeps focus on the page", async (t) => {
   assert.deepEqual(left, ["DE", "IT"]);
   const focused = await page.evaluate(() => document.activeElement && document.activeElement.tagName);
   assert.notEqual(focused, "BODY", "keyboard and screen reader users lose their place when focus drops to <body> after Remove");
+});
+
+test("Remove buttons have names that tell trips apart", async (t) => {
+  const { page } = await open(t, { saved: v2([["DE", "2026-01-01", "2026-01-01"], ["FR", "2026-02-01", "2026-02-01"], ["", "", ""]]) });
+  const names = await page.locator(".btn-remove").evaluateAll((b) => b.map((x) => x.getAttribute("aria-label")));
+  assert.deepEqual(names, ["Remove trip 1, Germany", "Remove trip 2, France", "Remove trip 3"]);
+});
+
+test("Remove on the last trip moves focus to Add trip", async (t) => {
+  const { page } = await open(t, { saved: v2([["DE", "2026-01-01", "2026-01-01"]]) });
+  await page.click(".btn-remove");
+  assert.equal(await page.evaluate(() => document.activeElement.id), "add-trip");
+});
+
+test("two open tabs keep each other's trips", async (t) => {
+  const context = await browser.newContext();
+  const a = await context.newPage();
+  const b = await context.newPage();
+  await a.goto(base);
+  await b.goto(base);
+  await addTrip(a, "DE", "2026-01-01", "2026-01-02");
+  await b.waitForFunction(() => document.querySelectorAll("#trip-list > li").length === 1);
+  await addTrip(b, "FR", "2026-02-01", "2026-02-02");
+  await a.waitForFunction(() => document.querySelectorAll("#trip-list > li").length === 2);
+  await a.reload();
+  const codes = await a.locator(".trip-country").evaluateAll((els) => els.map((e) => e.value));
+  await context.close();
+  assert.deepEqual(codes, ["DE", "FR"]);
 });
 
 test("Clear all needs a second click and resets after 4 seconds", async (t) => {

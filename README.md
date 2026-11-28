@@ -12,7 +12,8 @@ Live site: https://90days.alltripsconsidered.com/
 - Add any number of trips, each with a Schengen country, an entry date, and a departure date.
 - The country list shows all 29 Schengen countries with the English name, native name, and flag, for example "Germany | Deutschland | 🇩🇪".
 - Entry and departure days both count as full days. Overlapping trips are counted once.
-- The check date defaults to today. Pick a future date to plan an upcoming trip.
+- The check date defaults to today and moves to the next day at midnight while the page is open. Pick another date to plan an upcoming trip, and it stays put.
+- A trip with only an entry date or only a departure date shows a message and counts no days until both are set.
 - The running total is shown in color with a status emoji:
 
   | Days used | Color | Emoji |
@@ -36,7 +37,8 @@ Live site: https://90days.alltripsconsidered.com/
 - The page shows dates, times, and numbers in the visitor's device format (language and region), including the 12 or 24 hour clock and local digits.
 - The TXT export uses the same device formats, with the export time in the device's time zone.
 - Saved data, CSV, JSON, and file names always use `YYYY-MM-DD` so spreadsheets and other programs read them reliably.
-- Day counting never depends on the time zone.
+- Day counting never depends on the time zone. Only today's date does, so the default check date follows the device's own calendar.
+- Trips added in one tab show up in any other open tab right away, so one tab never overwrites another.
 
 ### Appearance
 - The button in the upper right corner opens the Appearance panel.
@@ -170,7 +172,7 @@ When any file the offline app caches changes, increase the version number in the
 - **Content-Security-Policy** in a `<meta>` tag on both pages: scripts, styles, fonts, and data load only from this site. Images also allow `data:` and `blob:` (map downloads). There are no inline scripts or styles, no `eval`, and no third-party requests.
 - **Trusted Types** are enforced, so the browser blocks `innerHTML` and similar HTML string sinks. Build interface with `textContent` and `createElement`. The only allowed policy is `schengen-sw`, in `docs/js/install.js`, and it creates exactly one URL: `sw.js`.
 - **Fonts are self-hosted** in `docs/fonts/`. Downloaded SVG maps embed the font, so they make no outside requests either.
-- **Checked input:** saved trips are checked when they load. Unknown countries are cleared so the visitor can pick again, and a trip whose departure comes before its entry is flagged and counts no days.
+- **Checked input:** saved trips are checked when they load. Unknown countries and any date not in `YYYY-MM-DD` form are cleared so the visitor can pick again, and a trip whose departure comes before its entry is flagged and counts no days. Country lookups ignore built-in names such as `__proto__`.
 - Keep the policy in the two `<meta>` tags and in the Cloudflare rule the same. If a change needs a new source (for example analytics), add it to all three.
 
 ### Headers to set in Cloudflare

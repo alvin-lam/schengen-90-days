@@ -10,18 +10,24 @@
   var referenceInput = document.getElementById("reference-date");
 
   var trips = loadTrips();
+  // The check date follows today until the visitor picks another date.
+  var followToday = true;
   referenceInput.value = C.todayIso();
 
   // Saved data: { version: 2, trips: [{ id, country: "DE", entry, exit }] }.
   // Older saves are upgraded once on load (see upgradeSaved in calc.js).
-  function loadTrips() {
-    var data;
+  function readSaved() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      data = C.upgradeSaved(raw ? JSON.parse(raw) : []);
+      return C.upgradeSaved(raw ? JSON.parse(raw) : []);
     } catch (e) {
-      return [];
+      return null;
     }
+  }
+
+  function loadTrips() {
+    var data = readSaved();
+    if (!data) return [];
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) { /* storage unavailable */ }
@@ -87,6 +93,10 @@
         trips.splice(index, 1);
         saveTrips();
         renderTrips();
+        // Keep keyboard and screen reader users in place: the trip that moved
+        // up into this spot, the one before it, or Add trip when none are left.
+        var buttons = tripList.querySelectorAll(".btn-remove");
+        (buttons[Math.min(index, buttons.length - 1)] || document.getElementById("add-trip")).focus();
       });
 
       tripList.appendChild(node);
@@ -95,17 +105,37 @@
     update();
   }
 
+  /** The check date to count with: the picked date, or today while the field is empty or half typed. */
+  function checkDate() {
+    var value = referenceInput.value;
+    return value && !isNaN(C.toDayNumber(value)) ? value : C.todayIso();
+  }
+
+  var TRIP_ERRORS = {
+    backwards: "Departure date must be on or after the entry date.",
+    noExit: "Add a departure date. This trip counts no days until it has one.",
+    noEntry: "Add an entry date. This trip counts no days until it has one."
+  };
+
   function update() {
-    var reference = referenceInput.value || C.todayIso();
+    var reference = checkDate();
     var result = C.daysInWindow(trips, reference);
     var status = C.statusFor(result.total);
 
     // Per-trip counts and validation.
     Array.prototype.forEach.call(tripList.children, function (node, i) {
       var trip = trips[i];
-      var invalid = trip.entry && trip.exit && C.toDayNumber(trip.exit) < C.toDayNumber(trip.entry);
-      node.classList.toggle("invalid", !!invalid);
-      node.querySelector(".trip-error").hidden = !invalid;
+      var problem = trip.entry && trip.exit
+        ? (C.toDayNumber(trip.exit) < C.toDayNumber(trip.entry) ? "backwards" : "")
+        : trip.entry ? "noExit" : trip.exit ? "noEntry" : "";
+      node.classList.toggle("invalid", !!problem);
+      var error = node.querySelector(".trip-error");
+      error.textContent = problem ? TRIP_ERRORS[problem] : "";
+      error.hidden = !problem;
+      // Name each Remove button after its trip, so screen readers can tell them apart.
+      var country = C.countryByCode(trip.country);
+      node.querySelector(".btn-remove").setAttribute("aria-label",
+        "Remove trip " + (i + 1) + (country ? ", " + country.name : ""));
       var value = node.querySelector(".trip-days-value");
       var length = C.tripLength(trip);
       var counted = result.perTrip[i];
@@ -209,7 +239,47 @@
     clearTimer = setTimeout(resetClear, 4000);
   });
 
-  referenceInput.addEventListener("change", update);
+  referenceInput.addEventListener("change", function () {
+    // A cleared field, or today itself, goes back to following today.
+    followToday = !referenceInput.value || referenceInput.value === C.todayIso();
+    update();
+  });
+
+  // Move the check date to the new day at midnight, and when the page comes
+  // back after the device slept, unless the visitor picked a date.
+  function refreshToday() {
+    if (!followToday) return;
+    var today = C.todayIso();
+    if (referenceInput.value !== today) {
+      referenceInput.value = today;
+      update();
+    }
+  }
+  function scheduleMidnight() {
+    var now = new Date();
+    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+    setTimeout(function () { refreshToday(); scheduleMidnight(); }, next - now);
+  }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) refreshToday(); });
+  window.addEventListener("focus", refreshToday);
+  window.addEventListener("pageshow", refreshToday);
+  scheduleMidnight();
+
+  // Another tab changed the trips: show its list here too, so this tab's
+  // next save does not overwrite them.
+  window.addEventListener("storage", function (e) {
+    if (e.key !== STORAGE_KEY && e.key !== null) return;
+    var data = readSaved();
+    if (!data) return;
+    var active = document.activeElement;
+    var row = active && active.closest ? active.closest("#trip-list > li") : null;
+    var pos = row ? Array.prototype.indexOf.call(tripList.children, row) : -1;
+    var field = row ? active.className.split(" ")[0] : "";
+    trips = data.trips;
+    renderTrips();
+    var again = pos >= 0 && tripList.children[pos] && tripList.children[pos].querySelector("." + field);
+    if (again) again.focus();
+  });
 
   // Export the record as CSV, JSON, or plain text.
   var X = window.SchengenExport;
@@ -217,7 +287,7 @@
   var exportStatusTimer = null;
 
   function currentExport(format) {
-    var reference = referenceInput.value || C.todayIso();
+    var reference = checkDate();
     var record = X.buildRecord(trips, reference);
     return {
       text: X.FORMATS[format].serialize(record, DEVICE_FORMAT),
@@ -575,7 +645,7 @@
   }
 
   function mapFileName(format) {
-    return "schengen-map-" + (referenceInput.value || C.todayIso()) + "." + format;
+    return "schengen-map-" + checkDate() + "." + format;
   }
 
   setupFormatMenu("map-download", "map-menu", function (format) {
@@ -605,7 +675,7 @@
   var shareMenu = document.getElementById("share-menu");
 
   function shareText() {
-    var reference = referenceInput.value || C.todayIso();
+    var reference = checkDate();
     var total = C.daysInWindow(trips, reference).total;
     var countries = {};
     trips.forEach(function (t) { if (t.country) countries[t.country] = true; });
