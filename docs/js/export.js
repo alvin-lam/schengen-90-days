@@ -38,8 +38,9 @@
           countryCode: info ? info.code : "",
           nativeName: info ? info.native : "",
           entryDate: trip.entry || "",
-          departureDate: trip.exit || "",
-          tripDays: C.tripLength(trip),
+          departureDate: trip.ongoing ? "" : (trip.exit || ""),
+          stillInSchengen: !!trip.ongoing,
+          tripDays: C.tripLength(trip, referenceDate),
           daysInWindow: result.perTrip[i]
         };
       })
@@ -54,9 +55,9 @@
 
   /** One row per trip, ready for Excel, Numbers, or Google Sheets. */
   function toCSV(record) {
-    var rows = [["Country", "Native name", "Entry date", "Departure date", "Trip days", "Days in 180-day window"]];
+    var rows = [["Country", "Native name", "Entry date", "Departure date", "Still in Schengen", "Trip days", "Days in 180-day window"]];
     record.trips.forEach(function (t) {
-      rows.push([t.country, t.nativeName, t.entryDate, t.departureDate, t.tripDays, t.daysInWindow]);
+      rows.push([t.country, t.nativeName, t.entryDate, t.departureDate, t.stillInSchengen ? "Yes" : "No", t.tripDays, t.daysInWindow]);
     });
     return rows.map(function (r) { return r.map(csvField).join(","); }).join("\r\n") + "\r\n";
   }
@@ -96,7 +97,8 @@
     ];
     record.trips.forEach(function (t, i) {
       var name = t.country ? t.country + (t.nativeName ? " (" + t.nativeName + ")" : "") : "Country not selected";
-      var dates = (t.entryDate ? fmt.date(t.entryDate) : "?") + " to " + (t.departureDate ? fmt.date(t.departureDate) : "?");
+      var dates = (t.entryDate ? fmt.date(t.entryDate) : "?") + " to " +
+        (t.stillInSchengen ? fmt.date(record.checkDate) + " (still in the Schengen Area)" : t.departureDate ? fmt.date(t.departureDate) : "?");
       lines.push(n(i + 1) + ". " + name + ": " + dates + ", " + n(t.tripDays) +
         (t.tripDays === 1 ? " day" : " days") + " (" + n(t.daysInWindow) + " in window)");
     });

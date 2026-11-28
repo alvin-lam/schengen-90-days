@@ -17,7 +17,7 @@
   var followToday = true;
   referenceInput.value = C.todayIso();
 
-  // Saved data: { version: 2, trips: [{ id, country: "DE", entry, exit }] }.
+  // Saved data: { version: 3, trips: [{ id, country: "DE", entry, exit, ongoing }] }.
   // Older saves are upgraded once on load (see upgradeSaved in calc.js).
   function readSaved() {
     try {
@@ -75,6 +75,7 @@
       var country = node.querySelector(".trip-country");
       var entry = node.querySelector(".trip-entry");
       var exit = node.querySelector(".trip-exit");
+      var still = node.querySelector(".trip-still");
       var error = node.querySelector(".trip-error");
       error.id = "trip-error-" + id;
       [entry, exit].forEach(function (input) { input.setAttribute("aria-describedby", error.id); });
@@ -83,6 +84,8 @@
       entry.value = trip.entry || "";
       exit.value = trip.exit || "";
       exit.min = trip.entry || "";
+      still.checked = !!trip.ongoing;
+      exit.disabled = !!trip.ongoing;
 
       // Each handler looks the trip up again, so it never writes to the wrong trip.
       function edit(change) {
@@ -101,7 +104,7 @@
           exit.min = entry.value;
           // Fill an empty departure only from a finished, usable date, never from
           // a year still being typed.
-          if (!exit.value && C.isUsableDate(entry.value)) {
+          if (!t.ongoing && !exit.value && C.isUsableDate(entry.value)) {
             exit.value = entry.value;
             t.exit = entry.value;
           }
@@ -109,6 +112,15 @@
       });
       exit.addEventListener("change", function () {
         edit(function (t) { t.exit = exit.value; });
+      });
+      // Still in the Schengen Area: no departure date, and the trip counts
+      // through the check date, which follows today by default.
+      still.addEventListener("change", function () {
+        edit(function (t) {
+          t.ongoing = still.checked;
+          if (t.ongoing) { t.exit = ""; exit.value = ""; }
+          exit.disabled = t.ongoing;
+        });
       });
       node.querySelector(".btn-remove").addEventListener("click", function () {
         var pos = Array.prototype.indexOf.call(tripList.children, node);
@@ -143,6 +155,7 @@
 
   function tripProblem(trip) {
     if (trip.entry && !C.isUsableDate(trip.entry)) return "badEntry";
+    if (trip.ongoing) return trip.entry ? "" : "noEntry";
     if (trip.exit && !C.isUsableDate(trip.exit)) return "badExit";
     if (trip.entry && trip.exit) return C.toDayNumber(trip.exit) < C.toDayNumber(trip.entry) ? "backwards" : "";
     return trip.entry ? "noExit" : trip.exit ? "noEntry" : "";
@@ -174,13 +187,18 @@
       node.querySelector(".btn-remove").setAttribute("aria-label",
         "Remove trip " + (i + 1) + (country ? ", " + country.name : ""));
       var value = node.querySelector(".trip-days-value");
-      var length = C.tripLength(trip);
+      var length = C.tripLength(trip, reference);
       var counted = result.perTrip[position[trip.id]];
       value.textContent = formatNumber(counted);
       value.title = length && counted !== length
         ? counted + " of " + length + " trip days fall inside the 180 day window"
         : "";
     });
+
+    // At the trip limit, explain why Add trip is off.
+    var full = trips.length >= C.MAX_TRIPS;
+    document.getElementById("add-trip").disabled = full;
+    document.getElementById("trip-limit").hidden = !full;
 
     // Summary.
     var summary = document.getElementById("summary");
@@ -247,7 +265,8 @@
   var DEVICE_FORMAT = { date: formatDate, dateTime: formatDateTime, number: formatNumber };
 
   document.getElementById("add-trip").addEventListener("click", function () {
-    trips.push({ id: C.newTripId(), country: "", entry: "", exit: "" });
+    if (trips.length >= C.MAX_TRIPS) return;
+    trips.push({ id: C.newTripId(), country: "", entry: "", exit: "", ongoing: false });
     saveTrips();
     renderTrips();
     var last = tripList.lastElementChild;

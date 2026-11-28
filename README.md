@@ -9,7 +9,8 @@ Live site: https://90days.alltripsconsidered.com/
 ## Features
 
 ### Counting days
-- Add any number of trips, each with a Schengen country, an entry date, and a departure date.
+- Add up to 1,000 trips, each with a Schengen country, an entry date, and a departure date. At 1,000 the Add trip button turns off and a note explains why.
+- **Still in the Schengen Area:** a checkbox on each trip for a stay that has not ended. The trip needs no departure date and counts through the check date. Since the check date follows today, the count grows by one each day.
 - The country list shows all 29 Schengen countries with the English name, native name, and flag, for example "Germany | Deutschland | 🇩🇪".
 - Entry and departure days both count as full days. Overlapping trips are counted once.
 - The check date defaults to today and moves to the next day at midnight while the page is open. Pick another date to plan an upcoming trip, and it stays put. A check date that can't be used (a year outside 1900 to 2999) shows a message, and the totals count to today until it is fixed.
@@ -54,7 +55,7 @@ Live site: https://90days.alltripsconsidered.com/
 
 ### Footer
 - Notes on how days are counted and that the tool is not legal advice.
-- **Rules last checked:** the date the Schengen rules were last reviewed, why Cyprus, Ireland, and the microstates (Andorra, Monaco, San Marino, Vatican City) are not in the country list, and a note about the EU Entry/Exit System.
+- **Rules last checked:** the date the Schengen rules were last reviewed, why Cyprus, Ireland, and the microstates (Andorra, Monaco, San Marino, Vatican City) are not in the country list, a note about the EU Entry/Exit System, that ETIAS has no start date yet, and that Cyprus aims to join on 1 July 2027.
 - A link to the privacy page and the copyright line for All Trips Considered.
 - **Travel Tools** links to the other All Trips Considered tools: Jet Lag & Recovery, My Maps, Point Calculator, Schengen 90/180 (this site, highlighted), and Trip Finder. They appear as buttons on wider screens and as a list on phones.
 
@@ -104,11 +105,14 @@ qa/browser.test.js            Playwright tests of the real page, including offli
 Trips are saved in the browser under the key `schengen-90-180-trips`:
 
 ```json
-{ "version": 2,
-  "trips": [{ "id": "t1abc", "country": "DE", "entry": "2026-06-01", "exit": "2026-06-10" }] }
+{ "version": 3,
+  "trips": [{ "id": "t1abc", "country": "DE", "entry": "2026-06-01", "exit": "2026-06-10", "ongoing": false },
+            { "id": "t2def", "country": "IT", "entry": "2026-11-10", "exit": "", "ongoing": true }] }
 ```
 
-Countries are stored by ISO code, never by name. Older saves (version 1, a plain list with English country names) are upgraded automatically the first time a visitor opens the new version.
+Countries are stored by ISO code, never by name. `ongoing` is `true` for a trip the traveler is still on, and its `exit` is then empty. A save holds at most 1,000 trips (`MAX_TRIPS` in `docs/js/calc.js`), and any beyond that are dropped when it loads. Older saves are upgraded automatically the first time a visitor opens the new version: version 1 (a plain list with English country names) and version 2 (no `ongoing` field).
+
+CSV, JSON, and TXT exports mark a trip the traveler is still on: a "Still in Schengen" column in CSV, `"stillInSchengen": true` in JSON, and "(still in the Schengen Area)" in TXT.
 
 ## Run locally
 
@@ -199,11 +203,10 @@ To help search engines find the site, submit `https://90days.alltripsconsidered.
 ### Owner tasks
 These need the site owner's accounts or approval.
 
-- [ ] **Submit the sitemap to search engines.** Add the site to Google Search Console and Bing Webmaster Tools, then submit the sitemap (see Deployment).
+- [ ] **Update the site when Cyprus joins.** Cyprus aims to join on 1 July 2027. Once the EU Council sets a date, add Cyprus to `docs/js/countries.js`, rebuild the map, and update the footer, the counts in this README, and the structured data.
 
 ### Features
 - [ ] **Import a saved record.** Let visitors load a JSON export back into the calculator, so trips survive clearing the browser or switching phones. This is the most important gap, since trips are otherwise stored only in one browser.
-- [ ] **"Still in Schengen" option.** A checkbox on a trip that counts up to today and updates daily, so travelers in Europe do not have to guess a departure date.
 
 ### Quality and operations
 - [ ] **Privacy-friendly visitor statistics.** Consider a cookie-free tool such as Plausible or GoatCounter to see how many people use the site and which features they use. Update `docs/privacy.html` first to explain what is collected.
@@ -215,6 +218,12 @@ These need the site owner's accounts or approval.
 - **Sign in with Apple or Google, with iCloud or Google Drive sync.** Reviewed in November 2026 and not pursued for now. Google Drive sync would need a Google Cloud project and Google's review of the app's name and logo, and sign-in does not work in in-app browsers. iCloud sync would need the Apple Developer Program ($99 per year) and CloudKit JS, which gets limited support for the web. Either would also replace the "no accounts" promise in the privacy page. If cloud storage comes up again, the simplest path is Import plus the phone's own Save to Files, which already reaches iCloud Drive and Google Drive with no sign-in.
 
 ### Done
+- [x] "Still in Schengen" option on each trip, counting through the check date
+- [x] At most 1,000 trips per save
+- [x] Footer note on ETIAS and Cyprus's planned joining date
+- [x] Sitemap submitted to Google Search Console and Bing Webmaster Tools
+- [x] Tested on real devices: Safari, Firefox, iPhone, and Android
+- [x] QC suite, QC & Bug Hunter agent, and QC on every pull request
 - [x] Privacy page, linked from the footer
 - [x] Dates, times, and numbers shown in the device's own format
 - [x] One shared country list and versioned saved data with automatic upgrades

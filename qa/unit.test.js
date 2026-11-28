@@ -143,6 +143,15 @@ test("invalid and incomplete trips count zero and keep perTrip aligned", () => {
   assert.equal(r.total, 2);
 });
 
+test("a trip the traveler is still on counts through the check date", () => {
+  const still = { id: "s", country: "DE", entry: "2026-06-01", exit: "", ongoing: true };
+  assert.equal(total([still], "2026-06-30"), 30);
+  assert.equal(total([still], "2026-07-15"), 45, "a later check date counts as staying until then");
+  assert.equal(total([still], "2026-05-31"), 0, "a check date before entry counts nothing");
+  assert.equal(C.tripLength(still, "2026-06-30"), 30);
+  assert.equal(total([still, trip("2026-06-20", "2026-07-10", "FR")], "2026-06-30"), 30, "overlap still counts once");
+});
+
 test("a leap day inside the window is a real day", () => {
   assert.equal(total([trip("2028-02-27", "2028-03-01")], "2028-03-01"), 4);
 });
@@ -209,9 +218,27 @@ test("prototype names and non-string countries become an empty choice", () => {
   assert.deepEqual(t.map((x) => x.country), ["", "", "", "", ""]);
 });
 
-test("version 2 saves pass through unchanged", () => {
+test("version 2 saves upgrade to version 3 unchanged apart from ongoing", () => {
   const v2 = { version: 2, trips: [{ id: "t1", country: "FR", entry: "2026-01-01", exit: "2026-01-02" }] };
-  assert.deepEqual(C.upgradeSaved(v2), v2);
+  assert.deepEqual(C.upgradeSaved(v2), { version: 3, trips: [{ id: "t1", country: "FR", entry: "2026-01-01", exit: "2026-01-02", ongoing: false }] });
+});
+
+test("version 3 saves pass through unchanged", () => {
+  const v3 = { version: 3, trips: [{ id: "t1", country: "FR", entry: "2026-01-01", exit: "", ongoing: true }] };
+  assert.deepEqual(C.upgradeSaved(v3), v3);
+});
+
+test("ongoing must be exactly true, and an ongoing trip has no departure date", () => {
+  const t = C.upgradeSaved([{ entry: "2026-01-01", exit: "2026-01-05", ongoing: true }, { ongoing: "yes" }, { ongoing: 1 }]).trips;
+  assert.deepEqual(t.map((x) => [x.ongoing, x.exit]), [[true, ""], [false, ""], [false, ""]]);
+});
+
+test("saves keep at most 1,000 trips", () => {
+  const many = Array.from({ length: 1500 }, (_, i) => ({ id: "t" + i, entry: "2026-01-01", exit: "2026-01-01" }));
+  const t = C.upgradeSaved(many).trips;
+  assert.equal(C.MAX_TRIPS, 1000);
+  assert.equal(t.length, 1000);
+  assert.equal(t[0].id, "t0");
 });
 
 test("junk saves never throw", () => {
@@ -279,7 +306,7 @@ test("CSV has a header, one row per trip, CRLF endings, and parses back", () => 
   const rows = parseCSV(csv);
   assert.equal(rows.length, 4);
   assert.equal(rows[0][0], "Country");
-  assert.deepEqual(rows[1], ["Germany", "Deutschland", "2026-03-01", "2026-03-10", "10", "10"]);
+  assert.deepEqual(rows[1], ["Germany", "Deutschland", "2026-03-01", "2026-03-10", "No", "10", "10"]);
   assert.ok(csv.endsWith("\r\n"));
   assert.ok(!/[^\r]\n/.test(csv), "every line break is CRLF");
 });
@@ -307,6 +334,15 @@ test("TXT export uses singular and plural correctly", () => {
   assert.match(over, /Exceeded by: 1 day\n/);
   const blank = X.toTXT(X.buildRecord([trip("", "", "")], "2026-06-30", NOW));
   assert.match(blank, /Country not selected: \? to \?, 0 days/);
+});
+
+test("exports mark a trip the traveler is still on", () => {
+  const r = X.buildRecord([{ id: "s", country: "IT", entry: "2026-06-01", exit: "", ongoing: true }], "2026-06-30", NOW);
+  assert.equal(r.trips[0].stillInSchengen, true);
+  assert.equal(r.trips[0].departureDate, "");
+  assert.equal(r.trips[0].tripDays, 30);
+  assert.equal(parseCSV(X.toCSV(r))[1][4], "Yes");
+  assert.match(X.toTXT(r), /2026-06-01 to 2026-06-30 \(still in the Schengen Area\), 30 days/);
 });
 
 test("file names use the check date", () => {

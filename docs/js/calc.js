@@ -11,6 +11,9 @@
   // Years a real trip can have. Anything else is a typo or a year still being
   // typed (date fields report 0002, 0020, 0202 on the way to 2026).
   var MIN_YEAR = 1900, MAX_YEAR = 2999;
+  // The most trips one browser keeps. Far more than any traveler needs, and
+  // keeps the page fast when a large file is loaded.
+  var MAX_TRIPS = 1000;
 
   var K = (typeof module !== "undefined" && module.exports)
     ? require("./countries.js")
@@ -68,7 +71,8 @@
 
     trips.forEach(function (trip) {
       var entry = toDayNumber(trip.entry);
-      var exit = toDayNumber(trip.exit);
+      // A trip the traveler is still on counts through the check date.
+      var exit = trip.ongoing ? end : toDayNumber(trip.exit);
       var inWindow = 0;
       if (!isNaN(entry) && !isNaN(exit) && exit >= entry) {
         var from = Math.max(entry, start);
@@ -104,17 +108,20 @@
     black: "Over the 90 day limit"
   };
 
-  /** Length of a single trip in days (entry and exit inclusive). */
-  function tripLength(trip) {
+  /**
+   * Length of a single trip in days (entry and exit inclusive). A trip the
+   * traveler is still on runs to referenceDate.
+   */
+  function tripLength(trip, referenceDate) {
     var entry = toDayNumber(trip.entry);
-    var exit = toDayNumber(trip.exit);
+    var exit = trip.ongoing ? toDayNumber(referenceDate) : toDayNumber(trip.exit);
     if (isNaN(entry) || isNaN(exit) || exit < entry) return 0;
     return exit - entry + 1;
   }
 
   /* ---------- Saved data ---------- */
 
-  var DATA_VERSION = 2;
+  var DATA_VERSION = 3;
 
   function newTripId() {
     return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -130,13 +137,15 @@
    *   Version 1 (before this change): a plain array of trips that stored the
    *   country's English name, e.g. [{ country: "Germany", entry, exit }].
    *   Version 2: { version: 2, trips: [{ id, country: "DE", entry, exit }] }.
+   *   Version 3: adds ongoing: true for a trip the traveler is still on
+   *   (its exit is then ""), and keeps at most MAX_TRIPS trips.
    * Unknown countries and dates a date field cannot show become "", so the
    * trip is kept and the visitor can pick again.
    */
   function upgradeSaved(raw) {
     var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.trips) ? raw.trips : []);
     var seen = Object.create(null);
-    var trips = list.filter(function (t) { return t && typeof t === "object"; }).map(function (t) {
+    var trips = list.filter(function (t) { return t && typeof t === "object"; }).slice(0, MAX_TRIPS).map(function (t) {
       var code = "";
       if (typeof t.country === "string" && t.country) {
         var c = K.byCode(t.country) || K.byName(t.country);
@@ -147,7 +156,8 @@
         id: typeof t.id === "string" && t.id && !seen[t.id] ? (seen[t.id] = true, t.id) : newTripId(),
         country: code,
         entry: cleanDate(t.entry),
-        exit: cleanDate(t.exit)
+        exit: t.ongoing === true ? "" : cleanDate(t.exit),
+        ongoing: t.ongoing === true
       };
     });
     return { version: DATA_VERSION, trips: trips };
@@ -156,6 +166,7 @@
   var api = {
     countryByCode: K.byCode,
     DATA_VERSION: DATA_VERSION,
+    MAX_TRIPS: MAX_TRIPS,
     newTripId: newTripId,
     upgradeSaved: upgradeSaved,
     COUNTRIES: COUNTRIES,

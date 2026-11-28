@@ -77,6 +77,7 @@
       "inLanguage": "en",
       "featureList": [
         "Counts days in the Schengen Area over any 180-day window",
+        "Still in Schengen option that counts a current stay through today",
         "Covers all 29 Schengen countries with native names and flags",
         "Color-coded status from 0 to 90+ days",
         "Map of visited Schengen countries, downloadable as JPG, PNG, or SVG",
@@ -102,7 +103,7 @@
         "sameAs": "https://en.wikipedia.org/wiki/Schengen_Area"
       },
       "keywords": "Schengen calculator, 90/180 rule, Schengen visa days, Schengen Area, short stay calculator, EU travel",
-      "dateModified": "2026-11-26"
+      "dateModified": "2026-11-28"
     }
   ]
 }
@@ -191,6 +192,7 @@
         <h2>Trips</h2>
       </div>
       <ol id="trip-list" class="trip-list"></ol>
+      <p id="trip-limit" class="hint" hidden>You have 1,000 trips, the most this calculator keeps. Remove a trip to add another.</p>
       <p id="empty-state" class="empty">No trips yet. Select "Add trip" below to begin.</p>
       <div class="card-footer">
         <button type="button" id="clear-all" class="btn btn-ghost">Clear all trips</button>
@@ -279,7 +281,7 @@
     <footer class="disclaimer">
       <p>Entry and departure days both count as days in the Schengen Area. Overlapping trips are counted once. Trips are saved only in this browser.</p>
       <p>This tool is for general information only and is not legal advice. Official border authorities make the final determination of your permitted stay.</p>
-      <p class="rules-note"><strong>Rules last checked: November 2026.</strong> The Schengen Area has 29 member countries. Cyprus, Ireland, and the microstates (Andorra, Monaco, San Marino, and Vatican City) are not Schengen members, so they are not in the country list. Most visitors reach the microstates through a neighboring Schengen country, and those days count. The EU Entry/Exit System (EES) now records entries and exits digitally at Schengen borders, so your official record may differ from what you enter here.</p>
+      <p class="rules-note"><strong>Rules last checked: November 2026.</strong> The Schengen Area has 29 member countries. Cyprus, Ireland, and the microstates (Andorra, Monaco, San Marino, and Vatican City) are not Schengen members, so they are not in the country list. Most visitors reach the microstates through a neighboring Schengen country, and those days count. The EU Entry/Exit System (EES) now records entries and exits digitally at Schengen borders, so your official record may differ from what you enter here. ETIAS, the EU's planned travel authorization for visitors who do not need a visa, has no start date yet and is not required today. Cyprus aims to join the Schengen Area on 1 July 2027, but the EU has not set a date. Until it joins, days in Cyprus do not count.</p>
       <p class="footer-links"><a href="privacy.html">Privacy</a></p>
       <img src="icons/icon-150.png" alt="Schengen 90/180 Calculator icon" width="75" height="75" class="footer-icon">
       <p class="copyright">© <span id="copyright-year">2026</span> <a href="https://alltripsconsidered.com">All Trips Considered</a>. All rights reserved.</p>
@@ -319,6 +321,10 @@
         <span class="trip-days-value">0</span>
       </div>
       <button type="button" class="btn btn-remove" aria-label="Remove trip">Remove</button>
+      <label class="trip-ongoing">
+        <input type="checkbox" class="trip-still">
+        <span>Still in the Schengen Area <span class="trip-ongoing-hint">(counts through the check date)</span></span>
+      </label>
       <p class="trip-error" aria-live="polite" hidden></p>
     </li>
   </template>

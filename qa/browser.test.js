@@ -241,6 +241,42 @@ test("a check date being typed is never overwritten by today", async (t) => {
   assert.equal(await page.inputValue("#reference-date"), "");
 });
 
+test("Still in the Schengen Area counts through the check date and follows today", async (t) => {
+  const context = await browser.newContext({ timezoneId: "Europe/Berlin" });
+  const page = await context.newPage();
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.clock.install({ time: new Date("2026-06-30T23:59:00+02:00") });
+  await page.goto(base);
+  const trip = await addTrip(page, "IT", "2026-06-01");
+  assert.equal(await trip.locator(".trip-exit").inputValue(), "2026-06-01");
+  await trip.locator(".trip-still").check();
+  assert.ok(await trip.locator(".trip-exit").isDisabled());
+  assert.equal(await trip.locator(".trip-exit").inputValue(), "");
+  assert.ok(await trip.locator(".trip-error").isHidden(), "no 'add a departure date' message");
+  assert.equal(await totalDays(page), "30");
+  await page.clock.fastForward("02:00");
+  assert.equal(await totalDays(page), "31", "the count grows when the day changes");
+  await page.reload();
+  assert.ok(await page.locator(".trip-still").isChecked(), "the choice is saved");
+  await page.locator(".trip-still").uncheck();
+  assert.ok(await page.locator(".trip-exit").isEnabled());
+  assert.match(await page.locator(".trip-error").textContent(), /Add a departure date/);
+  await context.close();
+  assert.deepEqual(errors, []);
+});
+
+test("Add trip stops at 1,000 trips and says why", async (t) => {
+  const many = [];
+  for (let i = 0; i < 1000; i++) many.push(["AT", "2026-01-01", "2026-01-01"]);
+  const { page } = await open(t, { saved: v2(many) });
+  assert.ok(await page.isDisabled("#add-trip"));
+  assert.ok(await page.isVisible("#trip-limit"));
+  await page.locator(".btn-remove").first().click();
+  assert.ok(await page.isEnabled("#add-trip"));
+  assert.ok(await page.isHidden("#trip-limit"));
+});
+
 test("picking an entry date fills an empty departure date", async (t) => {
   const { page } = await open(t);
   const trip = await addTrip(page, "PT", "2026-04-04");
@@ -263,7 +299,7 @@ test("version 1 saves are upgraded", async (t) => {
   assert.equal(await page.locator(".trip-country").nth(0).inputValue(), "DE");
   assert.equal(await page.locator(".trip-country").nth(1).inputValue(), "");
   const stored = JSON.parse(await page.evaluate(() => localStorage.getItem("schengen-90-180-trips")));
-  assert.equal(stored.version, 2);
+  assert.equal(stored.version, 3);
   assert.equal(stored.trips[0].country, "DE");
 });
 
@@ -399,7 +435,7 @@ test("CSV, JSON, and TXT exports download with the right content", async (t) => 
   const csv = await download(page, "#export-download", "csv");
   assert.equal(csv.name, "schengen-trips-2026-06-30.csv");
   assert.equal(csv.body.slice(0, 3).toString("hex"), "efbbbf", "CSV starts with a UTF-8 byte order mark for Excel");
-  assert.match(csv.body.toString("utf8"), /Belgium,België \/ Belgique \/ Belgien,2026-03-01,2026-03-10,10,10/);
+  assert.match(csv.body.toString("utf8"), /Belgium,België \/ Belgique \/ Belgien,2026-03-01,2026-03-10,No,10,10/);
   const json = JSON.parse((await download(page, "#export-download", "json")).body.toString("utf8"));
   assert.equal(json.totalDays, 10);
   assert.equal(json.checkDate, "2026-06-30");
