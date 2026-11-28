@@ -9,10 +9,12 @@ Live site: https://90days.alltripsconsidered.com/
 ## Features
 
 ### Counting days
-- Add any number of trips, each with a Schengen country, an entry date, and a departure date.
+- Add up to 1,000 trips, each with a Schengen country, an entry date, and a departure date. At 1,000 the Add trip button turns off and a note explains why.
+- **Still in the Schengen Area:** a checkbox on each trip for a stay that has not ended. The trip needs no departure date and counts through the check date. Since the check date follows today, the count grows by one each day. A departure date entered earlier is kept, so unticking the box brings it back. A stay that starts after the check date says so and counts no days yet.
 - The country list shows all 29 Schengen countries with the English name, native name, and flag, for example "Germany | Deutschland | 🇩🇪".
 - Entry and departure days both count as full days. Overlapping trips are counted once.
-- The check date defaults to today. Pick a future date to plan an upcoming trip.
+- The check date defaults to today and moves to the next day at midnight while the page is open. Pick another date to plan an upcoming trip, and it stays put. A check date that can't be used (a year outside 1900 to 2999) shows a message, and the totals count to today until it is fixed.
+- Picking an entry date fills an empty departure date with the same day. A trip missing a date, or with a date that can't be used, shows a message and counts no days until it is fixed.
 - The running total is shown in color with a status emoji:
 
   | Days used | Color | Emoji |
@@ -27,7 +29,7 @@ Live site: https://90days.alltripsconsidered.com/
 ### Map
 - A map of the Schengen Area shades each country in the visitor's trips. Luxembourg, Liechtenstein, and Malta also get dots, since they are too small to see.
 - **Download** saves the map as JPG, PNG, or SVG, with the titles at the top and the site address at the bottom.
-- **Share** opens the phone's share sheet with the map image attached. Browsers that cannot share files get a menu instead: Bluesky, Facebook, Instagram, LinkedIn, Pinterest, Reddit, Threads, WhatsApp, X, and Copy link. Instagram does not accept posts from websites, so that option saves the image and copies the caption.
+- **Share** opens the phone's share sheet with the map image attached. Browsers that cannot share files get a menu instead: Bluesky, Facebook, Instagram, LinkedIn, Pinterest, Reddit, Threads, WhatsApp, X, and Copy link. Instagram does not accept posts from websites, so that option saves the image and copies the caption. The shared message counts days used when the check date is today, and calls a future check date a plan.
 
 ### Export
 - **Download** in the Export section saves the trips and totals as CSV (spreadsheet), JSON (data), or TXT (plain text). The file is created in the browser and never uploaded.
@@ -36,12 +38,13 @@ Live site: https://90days.alltripsconsidered.com/
 - The page shows dates, times, and numbers in the visitor's device format (language and region), including the 12 or 24 hour clock and local digits.
 - The TXT export uses the same device formats, with the export time in the device's time zone.
 - Saved data, CSV, JSON, and file names always use `YYYY-MM-DD` so spreadsheets and other programs read them reliably.
-- Day counting never depends on the time zone.
+- Day counting never depends on the time zone. Only today's date does, so the default check date follows the device's own calendar.
+- Trips added in one tab show up in any other open tab right away, so one tab never overwrites another. Rows update in place, so a date being typed keeps its focus and its unfinished parts.
 
 ### Appearance
 - The button in the upper right corner opens the Appearance panel.
 - **Mode:** Auto (default, follows the device), Light, or Dark.
-- **Color:** Europe (default) or a scheme based on any Schengen country's flag. It recolors the buttons, links, map shading, and browser toolbar. The green, yellow, red, and black status colors never change.
+- **Color:** Europe (default) or a scheme based on any Schengen country's flag. It recolors the buttons, links, map shading, and browser toolbar. Button colors keep white text at a 4.5:1 contrast or better in both light and dark mode. The green, yellow, red, and black status colors never change.
 
 ### App and offline use
 - The site can be installed as a home screen app. Chrome, Edge, and Android show an Install button. iPhone and iPad show the Share > Add to Home Screen steps.
@@ -52,7 +55,7 @@ Live site: https://90days.alltripsconsidered.com/
 
 ### Footer
 - Notes on how days are counted and that the tool is not legal advice.
-- **Rules last checked:** the date the Schengen rules were last reviewed, why Cyprus, Ireland, and the microstates (Andorra, Monaco, San Marino, Vatican City) are not in the country list, and a note about the EU Entry/Exit System.
+- **Rules last checked:** the date the Schengen rules were last reviewed, why Cyprus, Ireland, and the microstates (Andorra, Monaco, San Marino, Vatican City) are not in the country list, a note about the EU Entry/Exit System, that ETIAS has no start date yet, and that Cyprus aims to join on 1 July 2027.
 - A link to the privacy page and the copyright line for All Trips Considered.
 - **Travel Tools** links to the other All Trips Considered tools: Jet Lag & Recovery, My Maps, Point Calculator, Schengen 90/180 (this site, highlighted), and Trip Finder. They appear as buttons on wider screens and as a list on phones.
 
@@ -89,6 +92,12 @@ README.md                     This file
 tools/build-map.js            Rebuilds the map from Natural Earth data
 tools/europe-map.svg          The map that build-map.js generates
 tools/package.json            Dependencies for the map builder
+qa/run.js                     QC runner: logic tests, static audit, and browser tests
+qa/unit.test.js               Day counting, saved data, and export tests (no dependencies)
+qa/audit.js                   Checks files, cache list, CSP, map, and search data against each other
+qa/browser.test.js            Playwright tests of the real page, including offline and phone widths
+.claude/agents/qc-bug-hunter.md   QC & Bug Hunter: on-demand Claude Code agent that runs seven checks and writes a report
+.github/workflows/qc.yml      Runs QC on every pull request to prod
 ```
 
 ### Saved data
@@ -96,11 +105,14 @@ tools/package.json            Dependencies for the map builder
 Trips are saved in the browser under the key `schengen-90-180-trips`:
 
 ```json
-{ "version": 2,
-  "trips": [{ "id": "t1abc", "country": "DE", "entry": "2026-06-01", "exit": "2026-06-10" }] }
+{ "version": 3,
+  "trips": [{ "id": "t1abc", "country": "DE", "entry": "2026-06-01", "exit": "2026-06-10", "ongoing": false },
+            { "id": "t2def", "country": "IT", "entry": "2026-11-10", "exit": "", "ongoing": true }] }
 ```
 
-Countries are stored by ISO code, never by name. Older saves (version 1, a plain list with English country names) are upgraded automatically the first time a visitor opens the new version.
+Countries are stored by ISO code, never by name. `ongoing` is `true` for a trip the traveler is still on. Its `exit` is kept, so unticking brings it back, but it is not counted. A save holds at most 1,000 trips (`MAX_TRIPS` in `docs/js/calc.js`), and any beyond that are dropped when it loads. Older saves are upgraded automatically the first time a visitor opens the new version: version 1 (a plain list with English country names) and version 2 (no `ongoing` field).
+
+CSV, JSON, and TXT exports mark a trip the traveler is still on: a "Still in Schengen" column in CSV, `"stillInSchengen": true` in JSON, and "(still in the Schengen Area)" in TXT.
 
 ## Run locally
 
@@ -111,6 +123,22 @@ python3 -m http.server 8000 --directory docs
 ```
 
 Open http://localhost:8000.
+
+## Quality checks
+
+Run every check before opening a pull request:
+
+```bash
+node qa/run.js
+```
+
+- **Logic tests** cover day counting, status levels, saved-data upgrades, and exports. They run in five time zones, because a count must never depend on the device's zone.
+- **Static audit** checks that every linked file exists, the `sw.js` cache list and version are current, the CSP matches on both pages and in the README, no forbidden HTML sinks are used, and every country has a map shape.
+- **Browser tests** drive the page in headless Chromium: adding and removing trips, status changes, saved data, downloads, menus, themes, phone widths, in-app browsers, and offline use. Any console error or CSP violation fails a test.
+
+The browser tests need Playwright once: `cd qa && npm install && npx playwright install chromium`. Use `node qa/run.js --quick` to skip them. The same checks run on every pull request to `prod`.
+
+In Claude Code, ask for a QC pass to run the **QC & Bug Hunter** agent (`.claude/agents/qc-bug-hunter.md`). It runs the suite, then works through seven checks: display and accessibility, day counting, Schengen rule changes, saved data and exports, offline and security, edge cases, and whether this README matches the behavior. It never edits files. Its report opens with a tl;dr of what is working, what is not, and what you need to do, then a "Fix these first" list and one section per check. Each finding has a severity, a confidence level, steps, expected and actual results, and a screenshot or source. The report is published as a private "Schengen Calculator QC Report" page, in the same layout as the Points Calculator QC Report. Name checks by number to run only those, for example "QC checks 2 and 3".
 
 ## Making changes
 
@@ -148,7 +176,7 @@ When any file the offline app caches changes, increase the version number in the
 - **Content-Security-Policy** in a `<meta>` tag on both pages: scripts, styles, fonts, and data load only from this site. Images also allow `data:` and `blob:` (map downloads). There are no inline scripts or styles, no `eval`, and no third-party requests.
 - **Trusted Types** are enforced, so the browser blocks `innerHTML` and similar HTML string sinks. Build interface with `textContent` and `createElement`. The only allowed policy is `schengen-sw`, in `docs/js/install.js`, and it creates exactly one URL: `sw.js`.
 - **Fonts are self-hosted** in `docs/fonts/`. Downloaded SVG maps embed the font, so they make no outside requests either.
-- **Checked input:** saved trips are checked when they load. Unknown countries are cleared so the visitor can pick again, and a trip whose departure comes before its entry is flagged and counts no days.
+- **Checked input:** saved trips are checked when they load. Unknown countries, any date not in `YYYY-MM-DD` form, and years outside 1900 to 2999 are cleared so the visitor can pick again, and a trip whose departure comes before its entry is flagged and counts no days. Country lookups ignore built-in names such as `__proto__`.
 - Keep the policy in the two `<meta>` tags and in the Cloudflare rule the same. If a change needs a new source (for example analytics), add it to all three.
 
 ### Headers to set in Cloudflare
@@ -175,11 +203,10 @@ To help search engines find the site, submit `https://90days.alltripsconsidered.
 ### Owner tasks
 These need the site owner's accounts or approval.
 
-- [ ] **Submit the sitemap to search engines.** Add the site to Google Search Console and Bing Webmaster Tools, then submit the sitemap (see Deployment).
+- [ ] **Update the site when Cyprus joins.** Cyprus aims to join on 1 July 2027. Once the EU Council sets a date, add Cyprus to `docs/js/countries.js`, rebuild the map, and update the footer, the counts in this README, and the structured data.
 
 ### Features
 - [ ] **Import a saved record.** Let visitors load a JSON export back into the calculator, so trips survive clearing the browser or switching phones. This is the most important gap, since trips are otherwise stored only in one browser.
-- [ ] **"Still in Schengen" option.** A checkbox on a trip that counts up to today and updates daily, so travelers in Europe do not have to guess a departure date.
 
 ### Quality and operations
 - [ ] **Privacy-friendly visitor statistics.** Consider a cookie-free tool such as Plausible or GoatCounter to see how many people use the site and which features they use. Update `docs/privacy.html` first to explain what is collected.
@@ -191,6 +218,12 @@ These need the site owner's accounts or approval.
 - **Sign in with Apple or Google, with iCloud or Google Drive sync.** Reviewed in November 2026 and not pursued for now. Google Drive sync would need a Google Cloud project and Google's review of the app's name and logo, and sign-in does not work in in-app browsers. iCloud sync would need the Apple Developer Program ($99 per year) and CloudKit JS, which gets limited support for the web. Either would also replace the "no accounts" promise in the privacy page. If cloud storage comes up again, the simplest path is Import plus the phone's own Save to Files, which already reaches iCloud Drive and Google Drive with no sign-in.
 
 ### Done
+- [x] "Still in Schengen" option on each trip, counting through the check date
+- [x] At most 1,000 trips per save
+- [x] Footer note on ETIAS and Cyprus's planned joining date
+- [x] Sitemap submitted to Google Search Console and Bing Webmaster Tools
+- [x] Tested on real devices: Safari, Firefox, iPhone, and Android
+- [x] QC suite, QC & Bug Hunter agent, and QC on every pull request
 - [x] Privacy page, linked from the footer
 - [x] Dates, times, and numbers shown in the device's own format
 - [x] One shared country list and versioned saved data with automatic upgrades

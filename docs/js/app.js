@@ -8,20 +8,27 @@
   var template = document.getElementById("trip-template");
   var emptyState = document.getElementById("empty-state");
   var referenceInput = document.getElementById("reference-date");
+  var checkError = document.getElementById("check-date-error");
 
   var trips = loadTrips();
+  // The check date follows today until the visitor picks another date.
+  var followToday = true;
   referenceInput.value = C.todayIso();
 
-  // Saved data: { version: 2, trips: [{ id, country: "DE", entry, exit }] }.
+  // Saved data: { version: 3, trips: [{ id, country: "DE", entry, exit, ongoing }] }.
   // Older saves are upgraded once on load (see upgradeSaved in calc.js).
-  function loadTrips() {
-    var data;
+  function readSaved() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      data = C.upgradeSaved(raw ? JSON.parse(raw) : []);
+      return C.upgradeSaved(raw ? JSON.parse(raw) : []);
     } catch (e) {
-      return [];
+      return null;
     }
+  }
+
+  function loadTrips() {
+    var data = readSaved();
+    if (!data) return [];
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) { /* storage unavailable */ }
@@ -50,70 +57,190 @@
     select.value = selected || "";
   }
 
+  /** The trip with this id, or null. Rows find their trip by id, so the list can change under them. */
+  function tripById(id) {
+    for (var i = 0; i < trips.length; i++) if (trips[i].id === id) return trips[i];
+    return null;
+  }
+
+  /**
+   * Show a trip's saved values in its row. The field that has focus is left
+   * alone, so a date being typed is never changed under the visitor.
+   */
+  function fillRow(node, trip) {
+    var active = document.activeElement;
+    function set(el, value) { if (el !== active && el.value !== value) el.value = value; }
+    var country = node.querySelector(".trip-country");
+    var entry = node.querySelector(".trip-entry");
+    var exit = node.querySelector(".trip-exit");
+    var still = node.querySelector(".trip-still");
+    set(country, trip.country || "");
+    set(entry, trip.entry || "");
+    // A current stay keeps its departure date in storage but shows none.
+    set(exit, trip.ongoing ? "" : (trip.exit || ""));
+    exit.min = trip.entry || "";
+    if (still !== active) still.checked = !!trip.ongoing;
+    exit.disabled = !!trip.ongoing;
+  }
+
+  /** A new row for one trip, with its event handlers. */
+  function buildRow(trip) {
+    var id = trip.id;
+    var node = template.content.firstElementChild.cloneNode(true);
+    node.setAttribute("data-id", id);
+    var country = node.querySelector(".trip-country");
+    var entry = node.querySelector(".trip-entry");
+    var exit = node.querySelector(".trip-exit");
+    var still = node.querySelector(".trip-still");
+    var error = node.querySelector(".trip-error");
+    error.id = "trip-error-" + id;
+    [entry, exit].forEach(function (input) { input.setAttribute("aria-describedby", error.id); });
+    buildCountryOptions(country, trip.country);
+    fillRow(node, trip);
+
+    // Each handler looks the trip up again, so it never writes to the wrong trip.
+    function edit(change) {
+      var current = tripById(id);
+      if (!current) return;
+      change(current);
+      saveTrips();
+      update();
+    }
+    country.addEventListener("change", function () {
+      edit(function (t) { t.country = country.value; });
+    });
+    entry.addEventListener("change", function () {
+      edit(function (t) {
+        t.entry = entry.value;
+        exit.min = entry.value;
+        // Fill an empty departure only from a finished, usable date, never from
+        // a year still being typed.
+        if (!t.ongoing && !exit.value && C.isUsableDate(entry.value)) {
+          exit.value = entry.value;
+          t.exit = entry.value;
+        }
+      });
+    });
+    exit.addEventListener("change", function () {
+      edit(function (t) { t.exit = exit.value; });
+    });
+    // Still in the Schengen Area: the trip counts through the check date,
+    // which follows today by default. The departure date is kept, so
+    // unticking the box brings it back.
+    still.addEventListener("change", function () {
+      edit(function (t) {
+        t.ongoing = still.checked;
+        exit.value = t.ongoing ? "" : (t.exit || "");
+        exit.disabled = t.ongoing;
+      });
+    });
+    node.querySelector(".btn-remove").addEventListener("click", function () {
+      var pos = Array.prototype.indexOf.call(tripList.children, node);
+      trips = trips.filter(function (t) { return t.id !== id; });
+      saveTrips();
+      renderTrips();
+      // Keep keyboard and screen reader users in place: the trip that moved
+      // up into this spot, the one before it, or Add trip when none are left.
+      var buttons = tripList.querySelectorAll(".btn-remove");
+      (buttons[Math.min(pos, buttons.length - 1)] || document.getElementById("add-trip")).focus();
+    });
+    return node;
+  }
+
+  /** Redraw every row from scratch. */
   function renderTrips() {
     tripList.replaceChildren();
-    trips.forEach(function (trip, index) {
-      var node = template.content.firstElementChild.cloneNode(true);
-      var country = node.querySelector(".trip-country");
-      var entry = node.querySelector(".trip-entry");
-      var exit = node.querySelector(".trip-exit");
-
-      buildCountryOptions(country, trip.country);
-      entry.value = trip.entry || "";
-      exit.value = trip.exit || "";
-      exit.min = trip.entry || "";
-
-      country.addEventListener("change", function () {
-        trips[index].country = country.value;
-        saveTrips();
-        update();
-      });
-      entry.addEventListener("change", function () {
-        trips[index].entry = entry.value;
-        exit.min = entry.value;
-        if (!exit.value && entry.value) {
-          exit.value = entry.value;
-          trips[index].exit = entry.value;
-        }
-        saveTrips();
-        update();
-      });
-      exit.addEventListener("change", function () {
-        trips[index].exit = exit.value;
-        saveTrips();
-        update();
-      });
-      node.querySelector(".btn-remove").addEventListener("click", function () {
-        trips.splice(index, 1);
-        saveTrips();
-        renderTrips();
-      });
-
-      tripList.appendChild(node);
-    });
+    trips.forEach(function (trip) { tripList.appendChild(buildRow(trip)); });
     emptyState.hidden = trips.length > 0;
     update();
   }
 
+  /**
+   * Bring the rows in line with the trips without redrawing them: keep each
+   * existing row (and whatever has focus in it), add new ones, drop removed
+   * ones, and move rows only when the order changed.
+   */
+  function syncRows() {
+    var rows = {};
+    Array.prototype.forEach.call(tripList.children, function (node) { rows[node.getAttribute("data-id")] = node; });
+    trips.forEach(function (trip, i) {
+      var node = rows[trip.id];
+      if (node) { fillRow(node, trip); delete rows[trip.id]; }
+      else node = buildRow(trip);
+      if (tripList.children[i] !== node) tripList.insertBefore(node, tripList.children[i] || null);
+    });
+    Object.keys(rows).forEach(function (id) { rows[id].remove(); });
+    emptyState.hidden = trips.length > 0;
+    update();
+  }
+
+  /** The check date to count with: the picked date, or today while the field is empty, half typed, or unusable. */
+  function checkDate() {
+    var value = referenceInput.value;
+    return C.isUsableDate(value) ? value : C.todayIso();
+  }
+
+  var TRIP_ERRORS = {
+    badEntry: "This entry date can't be used. Check the year.",
+    badExit: "This departure date can't be used. Check the year.",
+    backwards: "Departure date must be on or after the entry date.",
+    noExit: "Add a departure date. This trip counts no days until it has one.",
+    noEntry: "Add an entry date. This trip counts no days until it has one.",
+    startsLater: "This trip starts after the check date, so it counts no days yet."
+  };
+
+  function tripProblem(trip, reference) {
+    if (trip.entry && !C.isUsableDate(trip.entry)) return "badEntry";
+    if (trip.ongoing) {
+      if (!trip.entry) return "noEntry";
+      return C.toDayNumber(trip.entry) > C.toDayNumber(reference) ? "startsLater" : "";
+    }
+    if (trip.exit && !C.isUsableDate(trip.exit)) return "badExit";
+    if (trip.entry && trip.exit) return C.toDayNumber(trip.exit) < C.toDayNumber(trip.entry) ? "backwards" : "";
+    return trip.entry ? "noExit" : trip.exit ? "noEntry" : "";
+  }
+
   function update() {
-    var reference = referenceInput.value || C.todayIso();
+    var reference = checkDate();
     var result = C.daysInWindow(trips, reference);
     var status = C.statusFor(result.total);
+    var position = {};
+    trips.forEach(function (t, i) { position[t.id] = i; });
+
+    // A check date that can't be used: say so, and count to today meanwhile.
+    var badCheck = !!referenceInput.value && !C.isUsableDate(referenceInput.value);
+    checkError.textContent = badCheck ? "This date can't be used, so the totals count to today. Check the year." : "";
+    checkError.hidden = !badCheck;
 
     // Per-trip counts and validation.
     Array.prototype.forEach.call(tripList.children, function (node, i) {
-      var trip = trips[i];
-      var invalid = trip.entry && trip.exit && C.toDayNumber(trip.exit) < C.toDayNumber(trip.entry);
-      node.classList.toggle("invalid", !!invalid);
-      node.querySelector(".trip-error").hidden = !invalid;
+      var trip = tripById(node.getAttribute("data-id"));
+      if (!trip) return; // removed in another tab; the list redraws when editing ends
+      var problem = tripProblem(trip, reference);
+      node.classList.toggle("invalid", !!problem);
+      var error = node.querySelector(".trip-error");
+      if (error.textContent !== (problem ? TRIP_ERRORS[problem] : "")) error.textContent = problem ? TRIP_ERRORS[problem] : "";
+      error.hidden = !problem;
+      // Name each Remove button after its trip, so screen readers can tell them apart.
+      // Name each Remove button and checkbox after its trip, so screen readers can tell them apart.
+      var country = C.countryByCode(trip.country);
+      var which = "trip " + (i + 1) + (country ? ", " + country.name : "");
+      node.querySelector(".btn-remove").setAttribute("aria-label", "Remove " + which);
+      node.querySelector(".trip-still").setAttribute("aria-label",
+        "Still in the Schengen Area, " + which + ". Counts through the check date.");
       var value = node.querySelector(".trip-days-value");
-      var length = C.tripLength(trip);
-      var counted = result.perTrip[i];
+      var length = C.tripLength(trip, reference);
+      var counted = result.perTrip[position[trip.id]];
       value.textContent = formatNumber(counted);
       value.title = length && counted !== length
         ? counted + " of " + length + " trip days fall inside the 180 day window"
         : "";
     });
+
+    // At the trip limit, explain why Add trip is off.
+    var full = trips.length >= C.MAX_TRIPS;
+    document.getElementById("add-trip").disabled = full;
+    document.getElementById("trip-limit").hidden = !full;
 
     // Summary.
     var summary = document.getElementById("summary");
@@ -180,7 +307,8 @@
   var DEVICE_FORMAT = { date: formatDate, dateTime: formatDateTime, number: formatNumber };
 
   document.getElementById("add-trip").addEventListener("click", function () {
-    trips.push({ id: C.newTripId(), country: "", entry: "", exit: "" });
+    if (trips.length >= C.MAX_TRIPS) return;
+    trips.push({ id: C.newTripId(), country: "", entry: "", exit: "", ongoing: false });
     saveTrips();
     renderTrips();
     var last = tripList.lastElementChild;
@@ -209,7 +337,55 @@
     clearTimer = setTimeout(resetClear, 4000);
   });
 
-  referenceInput.addEventListener("change", update);
+  referenceInput.addEventListener("change", function () {
+    var value = referenceInput.value;
+    // Picking today goes back to following today. An empty value while the
+    // field has focus is a date being typed, so leave the choice alone.
+    if (value) followToday = value === C.todayIso();
+    else if (document.activeElement !== referenceInput) followToday = true;
+    update();
+  });
+  referenceInput.addEventListener("blur", function () {
+    // Left empty: follow today again.
+    if (!referenceInput.value) { followToday = true; refreshToday(); }
+  });
+
+  // Move the check date to the new day at midnight, and when the page comes
+  // back after the device slept, unless the visitor picked a date.
+  function refreshToday() {
+    // Never overwrite a date the visitor is typing.
+    if (!followToday || document.activeElement === referenceInput) return;
+    var today = C.todayIso();
+    if (referenceInput.value !== today) {
+      referenceInput.value = today;
+      update();
+    }
+  }
+  function scheduleMidnight() {
+    var now = new Date();
+    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+    setTimeout(function () { refreshToday(); scheduleMidnight(); }, next - now);
+  }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) refreshToday(); });
+  window.addEventListener("focus", refreshToday);
+  window.addEventListener("pageshow", refreshToday);
+  scheduleMidnight();
+
+  // Another tab changed the trips: show its list here too, so this tab's
+  // next save does not overwrite them. Rows are updated in place, so a date
+  // being typed here keeps its focus and its unfinished parts.
+  window.addEventListener("storage", function (e) {
+    if (e.key !== STORAGE_KEY && e.key !== null) return;
+    var data = readSaved();
+    if (!data) return;
+    resetClear();
+    // The trip being edited here keeps this tab's values.
+    var active = document.activeElement;
+    var row = active && tripList.contains(active) ? active.closest("li") : null;
+    var mine = row ? tripById(row.getAttribute("data-id")) : null;
+    trips = data.trips.map(function (t) { return mine && t.id === mine.id ? mine : t; });
+    syncRows();
+  });
 
   // Export the record as CSV, JSON, or plain text.
   var X = window.SchengenExport;
@@ -217,7 +393,7 @@
   var exportStatusTimer = null;
 
   function currentExport(format) {
-    var reference = referenceInput.value || C.todayIso();
+    var reference = checkDate();
     var record = X.buildRecord(trips, reference);
     return {
       text: X.FORMATS[format].serialize(record, DEVICE_FORMAT),
@@ -575,7 +751,7 @@
   }
 
   function mapFileName(format) {
-    return "schengen-map-" + (referenceInput.value || C.todayIso()) + "." + format;
+    return "schengen-map-" + checkDate() + "." + format;
   }
 
   setupFormatMenu("map-download", "map-menu", function (format) {
@@ -605,13 +781,18 @@
   var shareMenu = document.getElementById("share-menu");
 
   function shareText() {
-    var reference = referenceInput.value || C.todayIso();
+    var reference = checkDate();
     var total = C.daysInWindow(trips, reference).total;
     var countries = {};
     trips.forEach(function (t) { if (t.country) countries[t.country] = true; });
     var n = Object.keys(countries).length;
     if (!trips.length || !n) return "Check your Schengen 90/180 days with this free calculator.";
-    return "My Schengen map: " + n + (n === 1 ? " country" : " countries") + ", " + total + " of 90 days used in the last 180 days. Check yours:";
+    var places = n + (n === 1 ? " country" : " countries");
+    var today = C.todayIso();
+    // Today: days used. A future check date is a plan. A past one is a look back.
+    if (reference === today) return "My Schengen map: " + places + ", " + total + " of 90 days used in the last 180 days. Check yours:";
+    if (reference > today) return "My Schengen plan: " + places + ", " + total + " of 90 days by " + formatDate(reference) + ". Check yours:";
+    return "My Schengen map: " + places + ", " + total + " of 90 days used in the 180 days ending " + formatDate(reference) + ". Check yours:";
   }
 
   function canShareFiles() {

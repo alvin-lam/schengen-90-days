@@ -8,6 +8,12 @@
 
   var MS_PER_DAY = 24 * 60 * 60 * 1000;
   var WINDOW_DAYS = 180;
+  // Years a real trip can have. Anything else is a typo or a year still being
+  // typed (date fields report 0002, 0020, 0202 on the way to 2026).
+  var MIN_YEAR = 1900, MAX_YEAR = 2999;
+  // The most trips one browser keeps. Far more than any traveler needs, and
+  // keeps the page fast when a large file is loaded.
+  var MAX_TRIPS = 1000;
 
   var K = (typeof module !== "undefined" && module.exports)
     ? require("./countries.js")
@@ -22,9 +28,11 @@
 
   /** Convert "YYYY-MM-DD" into an integer day number (days since epoch, UTC). */
   function toDayNumber(isoDate) {
+    // Only the exact form a date input produces, so "2026-5-1" or "1e3-01-01" never counts.
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(isoDate))) return NaN;
     var parts = String(isoDate).split("-");
-    if (parts.length !== 3) return NaN;
     var y = Number(parts[0]), m = Number(parts[1]), d = Number(parts[2]);
+    if (y < MIN_YEAR || y > MAX_YEAR) return NaN;
     var ms = Date.UTC(y, m - 1, d);
     var check = new Date(ms);
     if (check.getUTCFullYear() !== y || check.getUTCMonth() !== m - 1 || check.getUTCDate() !== d) {
@@ -53,13 +61,18 @@
    */
   function daysInWindow(trips, referenceDate) {
     var end = toDayNumber(referenceDate);
+    if (isNaN(end)) {
+      // No valid check date: nothing to count, and never throw.
+      return { total: 0, perTrip: trips.map(function () { return 0; }), windowStart: "", windowEnd: "" };
+    }
     var start = end - (WINDOW_DAYS - 1);
     var counted = new Set();
     var perTrip = [];
 
     trips.forEach(function (trip) {
       var entry = toDayNumber(trip.entry);
-      var exit = toDayNumber(trip.exit);
+      // A trip the traveler is still on counts through the check date.
+      var exit = trip.ongoing ? end : toDayNumber(trip.exit);
       var inWindow = 0;
       if (!isNaN(entry) && !isNaN(exit) && exit >= entry) {
         var from = Math.max(entry, start);
@@ -95,20 +108,28 @@
     black: "Over the 90 day limit"
   };
 
-  /** Length of a single trip in days (entry and exit inclusive). */
-  function tripLength(trip) {
+  /**
+   * Length of a single trip in days (entry and exit inclusive). A trip the
+   * traveler is still on runs to referenceDate.
+   */
+  function tripLength(trip, referenceDate) {
     var entry = toDayNumber(trip.entry);
-    var exit = toDayNumber(trip.exit);
+    var exit = trip.ongoing ? toDayNumber(referenceDate) : toDayNumber(trip.exit);
     if (isNaN(entry) || isNaN(exit) || exit < entry) return 0;
     return exit - entry + 1;
   }
 
   /* ---------- Saved data ---------- */
 
-  var DATA_VERSION = 2;
+  var DATA_VERSION = 3;
 
   function newTripId() {
     return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  /** A saved date the page can show, or "" so the visitor can pick again. */
+  function cleanDate(value) {
+    return typeof value === "string" && !isNaN(toDayNumber(value)) ? value : "";
   }
 
   /**
@@ -116,21 +137,28 @@
    *   Version 1 (before this change): a plain array of trips that stored the
    *   country's English name, e.g. [{ country: "Germany", entry, exit }].
    *   Version 2: { version: 2, trips: [{ id, country: "DE", entry, exit }] }.
-   * Unknown countries become "" so the trip is kept and the visitor can pick again.
+   *   Version 3: adds ongoing: true for a trip the traveler is still on (any
+   *   exit is kept but not counted), and keeps at most MAX_TRIPS trips.
+   * Unknown countries and dates a date field cannot show become "", so the
+   * trip is kept and the visitor can pick again.
    */
   function upgradeSaved(raw) {
     var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.trips) ? raw.trips : []);
-    var trips = list.filter(function (t) { return t && typeof t === "object"; }).map(function (t) {
+    var seen = Object.create(null);
+    var trips = list.filter(function (t) { return t && typeof t === "object"; }).slice(0, MAX_TRIPS).map(function (t) {
       var code = "";
-      if (t.country) {
+      if (typeof t.country === "string" && t.country) {
         var c = K.byCode(t.country) || K.byName(t.country);
         code = c ? c.code : "";
       }
       return {
-        id: typeof t.id === "string" && t.id ? t.id : newTripId(),
+        // Every trip needs its own id: the page finds trips by id.
+        id: typeof t.id === "string" && t.id && !seen[t.id] ? (seen[t.id] = true, t.id) : newTripId(),
         country: code,
-        entry: typeof t.entry === "string" ? t.entry : "",
-        exit: typeof t.exit === "string" ? t.exit : ""
+        entry: cleanDate(t.entry),
+        // A current stay keeps any departure date, so unticking brings it back.
+        exit: cleanDate(t.exit),
+        ongoing: t.ongoing === true
       };
     });
     return { version: DATA_VERSION, trips: trips };
@@ -139,6 +167,7 @@
   var api = {
     countryByCode: K.byCode,
     DATA_VERSION: DATA_VERSION,
+    MAX_TRIPS: MAX_TRIPS,
     newTripId: newTripId,
     upgradeSaved: upgradeSaved,
     COUNTRIES: COUNTRIES,
@@ -146,6 +175,8 @@
     countryLabel: countryLabel,
     WINDOW_DAYS: WINDOW_DAYS,
     toDayNumber: toDayNumber,
+    /** True for a YYYY-MM-DD date the counter can use. */
+    isUsableDate: function (iso) { return !isNaN(toDayNumber(iso)); },
     toIsoDate: toIsoDate,
     todayIso: todayIso,
     daysInWindow: daysInWindow,

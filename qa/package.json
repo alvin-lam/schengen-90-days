@@ -1,0 +1,14 @@
+{
+  "name": "schengen-qc",
+  "private": true,
+  "description": "QC and bug hunting suite for the Schengen 90/180 Calculator. Not published.",
+  "scripts": {
+    "qc": "node run.js",
+    "unit": "node --test unit.test.js",
+    "audit": "node audit.js",
+    "browser": "node --test browser.test.js"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

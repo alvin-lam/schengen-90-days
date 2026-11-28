@@ -79,8 +79,9 @@
   // The default color scheme, based on the EU flag.
   var EUROPE = { code: "europe", name: "Europe", flag: "🇪🇺", colors: { primary: null, map: null, stripe: ["#003399", "#FFCC00", "#003399"] } };
 
-  var byCode = {};
-  var byName = {};
+  // No prototype, so names such as "__proto__" or "constructor" never match.
+  var byCode = Object.create(null);
+  var byName = Object.create(null);
   COUNTRIES.forEach(function (c) { byCode[c.code] = c; byName[c.name.toLowerCase()] = c; });
 
   var api = {

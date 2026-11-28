@@ -1,0 +1,30 @@
+name: QC
+
+on:
+  pull_request:
+    branches: [prod]
+  push:
+    branches: [prod]
+  workflow_dispatch:
+
+jobs:
+  qc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        working-directory: qa
+        run: npm install && npx playwright install --with-deps chromium
+      - name: Run QC
+        run: node qa/run.js
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qc-report
+          path: qa/report.txt
