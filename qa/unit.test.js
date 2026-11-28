@@ -228,9 +228,11 @@ test("version 3 saves pass through unchanged", () => {
   assert.deepEqual(C.upgradeSaved(v3), v3);
 });
 
-test("ongoing must be exactly true, and an ongoing trip has no departure date", () => {
+test("ongoing must be exactly true, and a current stay keeps its departure date", () => {
   const t = C.upgradeSaved([{ entry: "2026-01-01", exit: "2026-01-05", ongoing: true }, { ongoing: "yes" }, { ongoing: 1 }]).trips;
-  assert.deepEqual(t.map((x) => [x.ongoing, x.exit]), [[true, ""], [false, ""], [false, ""]]);
+  assert.deepEqual(t.map((x) => [x.ongoing, x.exit]), [[true, "2026-01-05"], [false, ""], [false, ""]]);
+  // The kept departure date is not counted while the stay is current.
+  assert.equal(C.daysInWindow([t[0]], "2026-01-20").total, 20);
 });
 
 test("saves keep at most 1,000 trips", () => {
@@ -343,6 +345,8 @@ test("exports mark a trip the traveler is still on", () => {
   assert.equal(r.trips[0].tripDays, 30);
   assert.equal(parseCSV(X.toCSV(r))[1][4], "Yes");
   assert.match(X.toTXT(r), /2026-06-01 to 2026-06-30 \(still in the Schengen Area\), 30 days/);
+  const later = X.buildRecord([{ id: "s", country: "IT", entry: "2026-12-20", exit: "", ongoing: true }], "2026-11-28", NOW);
+  assert.match(X.toTXT(later), /2026-12-20 \(still in the Schengen Area, starts after the check date\), 0 days/);
 });
 
 test("file names use the check date", () => {

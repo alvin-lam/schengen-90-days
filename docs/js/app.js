@@ -9,8 +9,6 @@
   var emptyState = document.getElementById("empty-state");
   var referenceInput = document.getElementById("reference-date");
   var checkError = document.getElementById("check-date-error");
-  // True while changes from another tab wait for the visitor to finish editing a trip.
-  var pendingRender = false;
 
   var trips = loadTrips();
   // The check date follows today until the visitor picks another date.
@@ -65,76 +63,113 @@
     return null;
   }
 
-  function renderTrips() {
-    pendingRender = false;
-    tripList.replaceChildren();
-    trips.forEach(function (trip) {
-      var id = trip.id;
-      var node = template.content.firstElementChild.cloneNode(true);
-      node.setAttribute("data-id", id);
-      var country = node.querySelector(".trip-country");
-      var entry = node.querySelector(".trip-entry");
-      var exit = node.querySelector(".trip-exit");
-      var still = node.querySelector(".trip-still");
-      var error = node.querySelector(".trip-error");
-      error.id = "trip-error-" + id;
-      [entry, exit].forEach(function (input) { input.setAttribute("aria-describedby", error.id); });
+  /**
+   * Show a trip's saved values in its row. The field that has focus is left
+   * alone, so a date being typed is never changed under the visitor.
+   */
+  function fillRow(node, trip) {
+    var active = document.activeElement;
+    function set(el, value) { if (el !== active && el.value !== value) el.value = value; }
+    var country = node.querySelector(".trip-country");
+    var entry = node.querySelector(".trip-entry");
+    var exit = node.querySelector(".trip-exit");
+    var still = node.querySelector(".trip-still");
+    set(country, trip.country || "");
+    set(entry, trip.entry || "");
+    // A current stay keeps its departure date in storage but shows none.
+    set(exit, trip.ongoing ? "" : (trip.exit || ""));
+    exit.min = trip.entry || "";
+    if (still !== active) still.checked = !!trip.ongoing;
+    exit.disabled = !!trip.ongoing;
+  }
 
-      buildCountryOptions(country, trip.country);
-      entry.value = trip.entry || "";
-      exit.value = trip.exit || "";
-      exit.min = trip.entry || "";
-      still.checked = !!trip.ongoing;
-      exit.disabled = !!trip.ongoing;
+  /** A new row for one trip, with its event handlers. */
+  function buildRow(trip) {
+    var id = trip.id;
+    var node = template.content.firstElementChild.cloneNode(true);
+    node.setAttribute("data-id", id);
+    var country = node.querySelector(".trip-country");
+    var entry = node.querySelector(".trip-entry");
+    var exit = node.querySelector(".trip-exit");
+    var still = node.querySelector(".trip-still");
+    var error = node.querySelector(".trip-error");
+    error.id = "trip-error-" + id;
+    [entry, exit].forEach(function (input) { input.setAttribute("aria-describedby", error.id); });
+    buildCountryOptions(country, trip.country);
+    fillRow(node, trip);
 
-      // Each handler looks the trip up again, so it never writes to the wrong trip.
-      function edit(change) {
-        var current = tripById(id);
-        if (!current) return;
-        change(current);
-        saveTrips();
-        update();
-      }
-      country.addEventListener("change", function () {
-        edit(function (t) { t.country = country.value; });
-      });
-      entry.addEventListener("change", function () {
-        edit(function (t) {
-          t.entry = entry.value;
-          exit.min = entry.value;
-          // Fill an empty departure only from a finished, usable date, never from
-          // a year still being typed.
-          if (!t.ongoing && !exit.value && C.isUsableDate(entry.value)) {
-            exit.value = entry.value;
-            t.exit = entry.value;
-          }
-        });
-      });
-      exit.addEventListener("change", function () {
-        edit(function (t) { t.exit = exit.value; });
-      });
-      // Still in the Schengen Area: no departure date, and the trip counts
-      // through the check date, which follows today by default.
-      still.addEventListener("change", function () {
-        edit(function (t) {
-          t.ongoing = still.checked;
-          if (t.ongoing) { t.exit = ""; exit.value = ""; }
-          exit.disabled = t.ongoing;
-        });
-      });
-      node.querySelector(".btn-remove").addEventListener("click", function () {
-        var pos = Array.prototype.indexOf.call(tripList.children, node);
-        trips = trips.filter(function (t) { return t.id !== id; });
-        saveTrips();
-        renderTrips();
-        // Keep keyboard and screen reader users in place: the trip that moved
-        // up into this spot, the one before it, or Add trip when none are left.
-        var buttons = tripList.querySelectorAll(".btn-remove");
-        (buttons[Math.min(pos, buttons.length - 1)] || document.getElementById("add-trip")).focus();
-      });
-
-      tripList.appendChild(node);
+    // Each handler looks the trip up again, so it never writes to the wrong trip.
+    function edit(change) {
+      var current = tripById(id);
+      if (!current) return;
+      change(current);
+      saveTrips();
+      update();
+    }
+    country.addEventListener("change", function () {
+      edit(function (t) { t.country = country.value; });
     });
+    entry.addEventListener("change", function () {
+      edit(function (t) {
+        t.entry = entry.value;
+        exit.min = entry.value;
+        // Fill an empty departure only from a finished, usable date, never from
+        // a year still being typed.
+        if (!t.ongoing && !exit.value && C.isUsableDate(entry.value)) {
+          exit.value = entry.value;
+          t.exit = entry.value;
+        }
+      });
+    });
+    exit.addEventListener("change", function () {
+      edit(function (t) { t.exit = exit.value; });
+    });
+    // Still in the Schengen Area: the trip counts through the check date,
+    // which follows today by default. The departure date is kept, so
+    // unticking the box brings it back.
+    still.addEventListener("change", function () {
+      edit(function (t) {
+        t.ongoing = still.checked;
+        exit.value = t.ongoing ? "" : (t.exit || "");
+        exit.disabled = t.ongoing;
+      });
+    });
+    node.querySelector(".btn-remove").addEventListener("click", function () {
+      var pos = Array.prototype.indexOf.call(tripList.children, node);
+      trips = trips.filter(function (t) { return t.id !== id; });
+      saveTrips();
+      renderTrips();
+      // Keep keyboard and screen reader users in place: the trip that moved
+      // up into this spot, the one before it, or Add trip when none are left.
+      var buttons = tripList.querySelectorAll(".btn-remove");
+      (buttons[Math.min(pos, buttons.length - 1)] || document.getElementById("add-trip")).focus();
+    });
+    return node;
+  }
+
+  /** Redraw every row from scratch. */
+  function renderTrips() {
+    tripList.replaceChildren();
+    trips.forEach(function (trip) { tripList.appendChild(buildRow(trip)); });
+    emptyState.hidden = trips.length > 0;
+    update();
+  }
+
+  /**
+   * Bring the rows in line with the trips without redrawing them: keep each
+   * existing row (and whatever has focus in it), add new ones, drop removed
+   * ones, and move rows only when the order changed.
+   */
+  function syncRows() {
+    var rows = {};
+    Array.prototype.forEach.call(tripList.children, function (node) { rows[node.getAttribute("data-id")] = node; });
+    trips.forEach(function (trip, i) {
+      var node = rows[trip.id];
+      if (node) { fillRow(node, trip); delete rows[trip.id]; }
+      else node = buildRow(trip);
+      if (tripList.children[i] !== node) tripList.insertBefore(node, tripList.children[i] || null);
+    });
+    Object.keys(rows).forEach(function (id) { rows[id].remove(); });
     emptyState.hidden = trips.length > 0;
     update();
   }
@@ -150,12 +185,16 @@
     badExit: "This departure date can't be used. Check the year.",
     backwards: "Departure date must be on or after the entry date.",
     noExit: "Add a departure date. This trip counts no days until it has one.",
-    noEntry: "Add an entry date. This trip counts no days until it has one."
+    noEntry: "Add an entry date. This trip counts no days until it has one.",
+    startsLater: "This trip starts after the check date, so it counts no days yet."
   };
 
-  function tripProblem(trip) {
+  function tripProblem(trip, reference) {
     if (trip.entry && !C.isUsableDate(trip.entry)) return "badEntry";
-    if (trip.ongoing) return trip.entry ? "" : "noEntry";
+    if (trip.ongoing) {
+      if (!trip.entry) return "noEntry";
+      return C.toDayNumber(trip.entry) > C.toDayNumber(reference) ? "startsLater" : "";
+    }
     if (trip.exit && !C.isUsableDate(trip.exit)) return "badExit";
     if (trip.entry && trip.exit) return C.toDayNumber(trip.exit) < C.toDayNumber(trip.entry) ? "backwards" : "";
     return trip.entry ? "noExit" : trip.exit ? "noEntry" : "";
@@ -177,15 +216,18 @@
     Array.prototype.forEach.call(tripList.children, function (node, i) {
       var trip = tripById(node.getAttribute("data-id"));
       if (!trip) return; // removed in another tab; the list redraws when editing ends
-      var problem = tripProblem(trip);
+      var problem = tripProblem(trip, reference);
       node.classList.toggle("invalid", !!problem);
       var error = node.querySelector(".trip-error");
       if (error.textContent !== (problem ? TRIP_ERRORS[problem] : "")) error.textContent = problem ? TRIP_ERRORS[problem] : "";
       error.hidden = !problem;
       // Name each Remove button after its trip, so screen readers can tell them apart.
+      // Name each Remove button and checkbox after its trip, so screen readers can tell them apart.
       var country = C.countryByCode(trip.country);
-      node.querySelector(".btn-remove").setAttribute("aria-label",
-        "Remove trip " + (i + 1) + (country ? ", " + country.name : ""));
+      var which = "trip " + (i + 1) + (country ? ", " + country.name : "");
+      node.querySelector(".btn-remove").setAttribute("aria-label", "Remove " + which);
+      node.querySelector(".trip-still").setAttribute("aria-label",
+        "Still in the Schengen Area, " + which + ". Counts through the check date.");
       var value = node.querySelector(".trip-days-value");
       var length = C.tripLength(trip, reference);
       var counted = result.perTrip[position[trip.id]];
@@ -330,53 +372,19 @@
   scheduleMidnight();
 
   // Another tab changed the trips: show its list here too, so this tab's
-  // next save does not overwrite them.
-  // The trip whose date is half typed right now: the field reports an
-  // unfinished entry, or holds a year still being typed (such as 0202).
-  function editingRow() {
-    var active = document.activeElement;
-    if (!active || active.tagName !== "INPUT" || !tripList.contains(active)) return null;
-    var halfTyped = (active.validity && active.validity.badInput) || (active.value && !C.isUsableDate(active.value));
-    return halfTyped ? active.closest("li") : null;
-  }
+  // next save does not overwrite them. Rows are updated in place, so a date
+  // being typed here keeps its focus and its unfinished parts.
   window.addEventListener("storage", function (e) {
     if (e.key !== STORAGE_KEY && e.key !== null) return;
     var data = readSaved();
     if (!data) return;
     resetClear();
-    var editing = editingRow();
-    if (editing) {
-      // The visitor is typing a date here. Take the other tab's list now, so
-      // nothing is overwritten, but keep this trip as it is here and redraw
-      // the rows only when editing ends, so a half-typed date is not lost.
-      var id = editing.getAttribute("data-id");
-      var mine = tripById(id);
-      var list = data.trips.filter(function (t) { return t.id !== id; });
-      if (mine) {
-        var at = -1;
-        data.trips.forEach(function (t, i) { if (t.id === id) at = i; });
-        list.splice(at < 0 ? list.length : at, 0, mine);
-      }
-      trips = list;
-      pendingRender = true;
-      update();
-      return;
-    }
+    // The trip being edited here keeps this tab's values.
     var active = document.activeElement;
-    var row = active && active.closest ? active.closest("#trip-list > li") : null;
-    var pos = row ? Array.prototype.indexOf.call(tripList.children, row) : -1;
-    var field = row ? active.className.split(" ")[0] : "";
-    trips = data.trips;
-    renderTrips();
-    var again = pos >= 0 && tripList.children[pos] && tripList.children[pos].querySelector("." + field);
-    if (again) again.focus();
-  });
-
-  tripList.addEventListener("focusout", function (e) {
-    if (!pendingRender || (e.relatedTarget && tripList.contains(e.relatedTarget))) return;
-    var next = e.relatedTarget;
-    renderTrips();
-    if (next && document.contains(next)) next.focus();
+    var row = active && tripList.contains(active) ? active.closest("li") : null;
+    var mine = row ? tripById(row.getAttribute("data-id")) : null;
+    trips = data.trips.map(function (t) { return mine && t.id === mine.id ? mine : t; });
+    syncRows();
   });
 
   // Export the record as CSV, JSON, or plain text.
@@ -779,7 +787,12 @@
     trips.forEach(function (t) { if (t.country) countries[t.country] = true; });
     var n = Object.keys(countries).length;
     if (!trips.length || !n) return "Check your Schengen 90/180 days with this free calculator.";
-    return "My Schengen map: " + n + (n === 1 ? " country" : " countries") + ", " + total + " of 90 days used in the last 180 days. Check yours:";
+    var places = n + (n === 1 ? " country" : " countries");
+    var today = C.todayIso();
+    // Today: days used. A future check date is a plan. A past one is a look back.
+    if (reference === today) return "My Schengen map: " + places + ", " + total + " of 90 days used in the last 180 days. Check yours:";
+    if (reference > today) return "My Schengen plan: " + places + ", " + total + " of 90 days by " + formatDate(reference) + ". Check yours:";
+    return "My Schengen map: " + places + ", " + total + " of 90 days used in the 180 days ending " + formatDate(reference) + ". Check yours:";
   }
 
   function canShareFiles() {

@@ -192,7 +192,7 @@
         <h2>Trips</h2>
       </div>
       <ol id="trip-list" class="trip-list"></ol>
-      <p id="trip-limit" class="hint" hidden>You have 1,000 trips, the most this calculator keeps. Remove a trip to add another.</p>
+      <p id="trip-limit" class="hint" aria-live="polite" hidden>You have 1,000 trips, the most this calculator keeps. Remove a trip to add another.</p>
       <p id="empty-state" class="empty">No trips yet. Select "Add trip" below to begin.</p>
       <div class="card-footer">
         <button type="button" id="clear-all" class="btn btn-ghost">Clear all trips</button>
@@ -316,15 +316,15 @@
         <span class="field-label">Departure date</span>
         <input type="date" class="trip-exit" required>
       </label>
+      <label class="trip-ongoing">
+        <input type="checkbox" class="trip-still">
+        <span>Still in the Schengen Area <span class="trip-ongoing-hint">(counts through the check date)</span></span>
+      </label>
       <div class="trip-days">
         <span class="field-label">Days counted</span>
         <span class="trip-days-value">0</span>
       </div>
       <button type="button" class="btn btn-remove" aria-label="Remove trip">Remove</button>
-      <label class="trip-ongoing">
-        <input type="checkbox" class="trip-still">
-        <span>Still in the Schengen Area <span class="trip-ongoing-hint">(counts through the check date)</span></span>
-      </label>
       <p class="trip-error" aria-live="polite" hidden></p>
     </li>
   </template>

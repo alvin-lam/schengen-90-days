@@ -137,8 +137,8 @@
    *   Version 1 (before this change): a plain array of trips that stored the
    *   country's English name, e.g. [{ country: "Germany", entry, exit }].
    *   Version 2: { version: 2, trips: [{ id, country: "DE", entry, exit }] }.
-   *   Version 3: adds ongoing: true for a trip the traveler is still on
-   *   (its exit is then ""), and keeps at most MAX_TRIPS trips.
+   *   Version 3: adds ongoing: true for a trip the traveler is still on (any
+   *   exit is kept but not counted), and keeps at most MAX_TRIPS trips.
    * Unknown countries and dates a date field cannot show become "", so the
    * trip is kept and the visitor can pick again.
    */
@@ -156,7 +156,8 @@
         id: typeof t.id === "string" && t.id && !seen[t.id] ? (seen[t.id] = true, t.id) : newTripId(),
         country: code,
         entry: cleanDate(t.entry),
-        exit: t.ongoing === true ? "" : cleanDate(t.exit),
+        // A current stay keeps any departure date, so unticking brings it back.
+        exit: cleanDate(t.exit),
         ongoing: t.ongoing === true
       };
     });

@@ -97,8 +97,10 @@
     ];
     record.trips.forEach(function (t, i) {
       var name = t.country ? t.country + (t.nativeName ? " (" + t.nativeName + ")" : "") : "Country not selected";
-      var dates = (t.entryDate ? fmt.date(t.entryDate) : "?") + " to " +
-        (t.stillInSchengen ? fmt.date(record.checkDate) + " (still in the Schengen Area)" : t.departureDate ? fmt.date(t.departureDate) : "?");
+      var entry = t.entryDate ? fmt.date(t.entryDate) : "?";
+      var dates = !t.stillInSchengen ? entry + " to " + (t.departureDate ? fmt.date(t.departureDate) : "?")
+        : t.entryDate > record.checkDate ? entry + " (still in the Schengen Area, starts after the check date)"
+        : entry + " to " + fmt.date(record.checkDate) + " (still in the Schengen Area)";
       lines.push(n(i + 1) + ". " + name + ": " + dates + ", " + n(t.tripDays) +
         (t.tripDays === 1 ? " day" : " days") + " (" + n(t.daysInWindow) + " in window)");
     });

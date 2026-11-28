@@ -261,9 +261,52 @@ test("Still in the Schengen Area counts through the check date and follows today
   assert.ok(await page.locator(".trip-still").isChecked(), "the choice is saved");
   await page.locator(".trip-still").uncheck();
   assert.ok(await page.locator(".trip-exit").isEnabled());
-  assert.match(await page.locator(".trip-error").textContent(), /Add a departure date/);
+  assert.equal(await page.locator(".trip-exit").inputValue(), "2026-06-01", "unticking brings the departure date back");
+  assert.ok(await page.locator(".trip-error").isHidden());
   await context.close();
   assert.deepEqual(errors, []);
+});
+
+test("a current stay that starts after the check date says so", async (t) => {
+  const { page } = await open(t);
+  await setCheckDate(page, "2026-11-28");
+  const trip = await addTrip(page, "IT", "2026-12-20");
+  await trip.locator(".trip-still").check();
+  assert.match(await trip.locator(".trip-error").textContent(), /starts after the check date/);
+  await setCheckDate(page, "2026-12-31");
+  assert.ok(await trip.locator(".trip-error").isHidden());
+  assert.equal(await totalDays(page), "12");
+});
+
+test("the checkbox follows the departure date in Tab order and names its trip", async (t) => {
+  const { page } = await open(t, { saved: v2([["DE", "2026-01-01", "2026-01-02"], ["IT", "2026-02-01", "2026-02-02"]]) });
+  // Tab follows the order of focusable controls in the row. (Chrome's Tab
+  // also steps through a date field's month, day, and year first.)
+  const order = await page.locator("#trip-list > li").first().evaluate((li) =>
+    [...li.querySelectorAll("select, input, button")].map((el) => el.className.split(" ").pop()));
+  assert.deepEqual(order, ["trip-country", "trip-entry", "trip-exit", "trip-still", "btn-remove"]);
+  // On wide screens the checkbox sits below the dates, not after Remove.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const box = await page.evaluate(() => {
+    const li = document.querySelector("#trip-list > li");
+    const r = (s) => li.querySelector(s).getBoundingClientRect();
+    return { still: r(".trip-still").top, exit: r(".trip-exit").bottom, remove: r(".btn-remove").top, exitTop: r(".trip-exit").top };
+  });
+  assert.ok(box.still > box.exit, "checkbox below the dates");
+  assert.ok(Math.abs(box.remove - box.exitTop) < 30, "Remove stays on the dates row");
+  const names = await page.locator(".trip-still").evaluateAll((b) => b.map((x) => x.getAttribute("aria-label")));
+  assert.match(names[1], /trip 2, Italy/);
+  assert.equal(new Set(names).size, 2);
+  assert.equal(await page.getAttribute("#trip-limit", "aria-live"), "polite");
+});
+
+test("share text calls a future check date a plan", async (t) => {
+  const { page } = await open(t, { saved: v2([["DE", "2026-03-01", "2026-03-10"]]) });
+  await setCheckDate(page, "2099-12-31");
+  await page.click("#share-map");
+  const href = await page.locator('#share-menu [data-format="x"]').getAttribute("href");
+  assert.match(decodeURIComponent(href), /My Schengen plan: 1 country, 0 of 90 days by /);
+  assert.doesNotMatch(decodeURIComponent(href), /used/);
 });
 
 test("Add trip stops at 1,000 trips and says why", async (t) => {
@@ -391,6 +434,25 @@ test("another tab's save waits while a date is being typed, and nothing is lost"
   assert.ok(stored.trips.some((x) => x.country === "FR"), "the other tab's trip is kept");
 });
 
+test("another tab's save never moves typing in a date that is valid mid-edit", async (t) => {
+  const context = await browser.newContext();
+  const a = await context.newPage();
+  const b = await context.newPage();
+  await a.addInitScript(() => { if (!sessionStorage.getItem("s")) { localStorage.setItem("schengen-90-180-trips", JSON.stringify({ version: 3, trips: [{ id: "a", country: "DE", entry: "2026-11-01", exit: "2026-11-03", ongoing: false }] })); sessionStorage.setItem("s", "1"); } });
+  await a.goto(base);
+  await b.goto(base);
+  const entry = a.locator(".trip-entry").first();
+  await entry.click({ position: { x: 12, y: 10 } }); // the month part
+  await a.keyboard.type("10"); // now 2026-10-01, a valid date
+  await addTrip(b, "FR", "2026-02-01", "2026-02-02");
+  await a.waitForFunction(() => document.querySelectorAll("#trip-list > li").length === 2);
+  await a.keyboard.type("15"); // the day part
+  await entry.blur();
+  const value = await entry.inputValue();
+  await context.close();
+  assert.equal(value, "2026-10-15");
+});
+
 test("Clear all resets when another tab changes the trips", async (t) => {
   const context = await browser.newContext();
   const a = await context.newPage();
@@ -494,7 +556,8 @@ test("the share menu has working links when the browser cannot share files", asy
   await page.click("#share-map");
   const hrefs = await page.locator("#share-menu a").evaluateAll((as) => as.map((a) => a.href));
   for (const h of hrefs) assert.match(h, /^https:\/\/[^#]+/, "share link " + h);
-  const x = hrefs.find((h) => h.includes("twitter.com"));
+  // Match on the parsed host, not a substring of the whole address.
+  const x = hrefs.find((h) => new URL(h).hostname === "twitter.com");
   assert.match(decodeURIComponent(x), /1 country, 10 of 90 days/);
 });
 

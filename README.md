@@ -10,7 +10,7 @@ Live site: https://90days.alltripsconsidered.com/
 
 ### Counting days
 - Add up to 1,000 trips, each with a Schengen country, an entry date, and a departure date. At 1,000 the Add trip button turns off and a note explains why.
-- **Still in the Schengen Area:** a checkbox on each trip for a stay that has not ended. The trip needs no departure date and counts through the check date. Since the check date follows today, the count grows by one each day.
+- **Still in the Schengen Area:** a checkbox on each trip for a stay that has not ended. The trip needs no departure date and counts through the check date. Since the check date follows today, the count grows by one each day. A departure date entered earlier is kept, so unticking the box brings it back. A stay that starts after the check date says so and counts no days yet.
 - The country list shows all 29 Schengen countries with the English name, native name, and flag, for example "Germany | Deutschland | 🇩🇪".
 - Entry and departure days both count as full days. Overlapping trips are counted once.
 - The check date defaults to today and moves to the next day at midnight while the page is open. Pick another date to plan an upcoming trip, and it stays put. A check date that can't be used (a year outside 1900 to 2999) shows a message, and the totals count to today until it is fixed.
@@ -29,7 +29,7 @@ Live site: https://90days.alltripsconsidered.com/
 ### Map
 - A map of the Schengen Area shades each country in the visitor's trips. Luxembourg, Liechtenstein, and Malta also get dots, since they are too small to see.
 - **Download** saves the map as JPG, PNG, or SVG, with the titles at the top and the site address at the bottom.
-- **Share** opens the phone's share sheet with the map image attached. Browsers that cannot share files get a menu instead: Bluesky, Facebook, Instagram, LinkedIn, Pinterest, Reddit, Threads, WhatsApp, X, and Copy link. Instagram does not accept posts from websites, so that option saves the image and copies the caption.
+- **Share** opens the phone's share sheet with the map image attached. Browsers that cannot share files get a menu instead: Bluesky, Facebook, Instagram, LinkedIn, Pinterest, Reddit, Threads, WhatsApp, X, and Copy link. Instagram does not accept posts from websites, so that option saves the image and copies the caption. The shared message counts days used when the check date is today, and calls a future check date a plan.
 
 ### Export
 - **Download** in the Export section saves the trips and totals as CSV (spreadsheet), JSON (data), or TXT (plain text). The file is created in the browser and never uploaded.
@@ -39,7 +39,7 @@ Live site: https://90days.alltripsconsidered.com/
 - The TXT export uses the same device formats, with the export time in the device's time zone.
 - Saved data, CSV, JSON, and file names always use `YYYY-MM-DD` so spreadsheets and other programs read them reliably.
 - Day counting never depends on the time zone. Only today's date does, so the default check date follows the device's own calendar.
-- Trips added in one tab show up in any other open tab right away, so one tab never overwrites another. While a date is half typed, the other tab's changes are merged in and the list redraws once typing ends.
+- Trips added in one tab show up in any other open tab right away, so one tab never overwrites another. Rows update in place, so a date being typed keeps its focus and its unfinished parts.
 
 ### Appearance
 - The button in the upper right corner opens the Appearance panel.
@@ -110,7 +110,7 @@ Trips are saved in the browser under the key `schengen-90-180-trips`:
             { "id": "t2def", "country": "IT", "entry": "2026-11-10", "exit": "", "ongoing": true }] }
 ```
 
-Countries are stored by ISO code, never by name. `ongoing` is `true` for a trip the traveler is still on, and its `exit` is then empty. A save holds at most 1,000 trips (`MAX_TRIPS` in `docs/js/calc.js`), and any beyond that are dropped when it loads. Older saves are upgraded automatically the first time a visitor opens the new version: version 1 (a plain list with English country names) and version 2 (no `ongoing` field).
+Countries are stored by ISO code, never by name. `ongoing` is `true` for a trip the traveler is still on. Its `exit` is kept, so unticking brings it back, but it is not counted. A save holds at most 1,000 trips (`MAX_TRIPS` in `docs/js/calc.js`), and any beyond that are dropped when it loads. Older saves are upgraded automatically the first time a visitor opens the new version: version 1 (a plain list with English country names) and version 2 (no `ongoing` field).
 
 CSV, JSON, and TXT exports mark a trip the traveler is still on: a "Still in Schengen" column in CSV, `"stillInSchengen": true` in JSON, and "(still in the Schengen Area)" in TXT.
 
