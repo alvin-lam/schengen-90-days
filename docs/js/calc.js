@@ -138,6 +138,7 @@
 
   var api = {
     countryByCode: K.byCode,
+    searchCountries: K.search,
     DATA_VERSION: DATA_VERSION,
     newTripId: newTripId,
     upgradeSaved: upgradeSaved,

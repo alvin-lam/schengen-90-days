@@ -301,10 +301,11 @@
 
   <template id="trip-template">
     <li class="trip">
-      <label class="field">
-        <span class="field-label">Country</span>
-        <select class="trip-country" required></select>
-      </label>
+      <div class="field combo">
+        <label class="field-label">Country</label>
+        <input type="text" class="trip-country" role="combobox" aria-autocomplete="list" aria-expanded="false" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Search by name or code, like DE or DEU" required>
+        <ul class="combo-list" role="listbox" hidden></ul>
+      </div>
       <label class="field">
         <span class="field-label">Entry date</span>
         <input type="date" class="trip-entry" required>

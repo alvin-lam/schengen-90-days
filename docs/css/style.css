@@ -270,7 +270,7 @@ input[type="date"], select {
   width: 100%;
   min-width: 0;
 }
-input:focus, select:focus, .btn:focus-visible {
+input:focus, select:focus, .btn:focus-visible, .combo input:focus {
   outline: 2px solid var(--primary);
   outline-offset: 1px;
 }
@@ -318,6 +318,57 @@ input:focus, select:focus, .btn:focus-visible {
 .trip-error { grid-column: 1 / -1; color: var(--red); margin: 0; font-size: .9rem; }
 .trip.invalid input { border-color: var(--red); }
 .empty { color: var(--muted); text-align: center; padding: 16px 0; margin: 0; }
+
+/* Searchable country field */
+.combo { position: relative; }
+.combo input {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  height: 44px;
+  width: 100%;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+.combo input::placeholder { color: var(--muted); opacity: 1; }
+.combo-list {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+}
+.combo-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.combo-option:hover { background: var(--bg); }
+.combo-option[aria-selected="true"] { background: var(--primary); color: var(--primary-text); }
+.combo-option[aria-selected="true"] .combo-native,
+.combo-option[aria-selected="true"] .combo-codes { color: inherit; }
+.combo-flag { font-size: 1.25rem; line-height: 1; }
+.combo-names { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.combo-name { font-weight: 600; }
+.combo-native { font-size: .85rem; color: var(--muted); overflow-wrap: anywhere; }
+.combo-codes { font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.combo-empty { padding: 10px; color: var(--muted); }
 
 /* Format menus for the map download and the record export */
 .menu-wrap { position: relative; margin-left: auto; }

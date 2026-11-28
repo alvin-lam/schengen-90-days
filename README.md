@@ -11,6 +11,8 @@ Live site: https://90days.alltripsconsidered.com/
 ### Counting days
 - Add any number of trips, each with a Schengen country, an entry date, and a departure date.
 - The country list shows all 29 Schengen countries with the English name, native name, and flag, for example "Germany | Deutschland | 🇩🇪".
+- The country field is searchable. Type an English name, a name in an official language, or a two- or three-letter code. For example, "Deutschland", "DE", and "DEU" all find Germany. Accents are optional, so "osterreich" finds Austria. Latin spellings such as "Ellada" find Greece and Bulgaria.
+- Arrow keys move through the list, Enter picks a country, and Escape closes the list without changing it. Leaving the field picks a country only when the typed text matches one clearly.
 - Entry and departure days both count as full days. Overlapping trips are counted once.
 - The check date defaults to today. Pick a future date to plan an upcoming trip.
 - The running total is shown in color with a status emoji:

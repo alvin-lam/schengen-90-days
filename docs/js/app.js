@@ -36,18 +36,141 @@
     }
   }
 
-  function buildCountryOptions(select, selected) {
-    var placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = "Select a country";
-    select.appendChild(placeholder);
-    C.COUNTRIES.forEach(function (country) {
-      var opt = document.createElement("option");
-      opt.value = country.code;
-      opt.textContent = C.countryLabel(country);
-      select.appendChild(opt);
+  var comboCount = 0;
+
+  /**
+   * Searchable country field. Type an English name, a name in an official
+   * language, or a two- or three-letter code, then pick from the list.
+   * Follows the ARIA combobox pattern so screen readers and keyboards work.
+   */
+  function setupCountryCombo(field, selected, onPick) {
+    var input = field.querySelector(".trip-country");
+    var list = field.querySelector(".combo-list");
+    var label = field.querySelector("label");
+    var id = "country-" + (++comboCount);
+    input.id = id;
+    label.htmlFor = id;
+    list.id = id + "-list";
+    input.setAttribute("aria-controls", list.id);
+
+    var current = C.countryByCode(selected) || null;
+    var matches = [];
+    var active = -1;
+
+    function show() { input.value = current ? C.countryLabel(current) : ""; }
+
+    function setActive(i) {
+      var items = list.children;
+      if (active >= 0 && items[active]) items[active].setAttribute("aria-selected", "false");
+      active = i;
+      if (active >= 0 && items[active]) {
+        items[active].setAttribute("aria-selected", "true");
+        input.setAttribute("aria-activedescendant", items[active].id);
+        items[active].scrollIntoView({ block: "nearest" });
+      } else {
+        input.removeAttribute("aria-activedescendant");
+      }
+    }
+
+    function open(query) {
+      matches = C.searchCountries(query);
+      list.replaceChildren();
+      if (!matches.length) {
+        var none = document.createElement("li");
+        none.className = "combo-empty";
+        none.textContent = "No Schengen country matches";
+        list.appendChild(none);
+      }
+      matches.forEach(function (country) {
+        var li = document.createElement("li");
+        li.id = list.id + "-" + country.code;
+        li.className = "combo-option";
+        li.setAttribute("role", "option");
+        li.setAttribute("aria-selected", "false");
+        var flag = document.createElement("span");
+        flag.className = "combo-flag";
+        flag.setAttribute("aria-hidden", "true");
+        flag.textContent = country.flag;
+        var names = document.createElement("span");
+        names.className = "combo-names";
+        var name = document.createElement("span");
+        name.className = "combo-name";
+        name.textContent = country.name;
+        var native = document.createElement("span");
+        native.className = "combo-native";
+        native.textContent = country.native;
+        names.append(name);
+        if (country.native !== country.name) names.append(native);
+        var codes = document.createElement("span");
+        codes.className = "combo-codes";
+        codes.textContent = country.code + " · " + country.code3;
+        li.append(flag, names, codes);
+        li.addEventListener("mousedown", function (e) { e.preventDefault(); });
+        li.addEventListener("click", function () { pick(country); });
+        list.appendChild(li);
+      });
+      list.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+      var start = query ? (matches.length ? 0 : -1) : (current ? matches.indexOf(current) : -1);
+      active = -1;
+      setActive(start);
+    }
+
+    // After typing, leaving the field picks a country only when the text
+    // clearly names one: a single match, or an exact code or English name.
+    function typedPick() {
+      if (list.hidden || !input.value || input.value === (current ? C.countryLabel(current) : "")) return null;
+      if (matches.length === 1) return matches[0];
+      var q = input.value.trim().toLowerCase();
+      var top = matches[0];
+      if (top && (q === top.code.toLowerCase() || q === top.code3.toLowerCase() || q === top.name.toLowerCase())) return top;
+      return null;
+    }
+
+    function close() {
+      list.hidden = true;
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
+      active = -1;
+    }
+
+    function pick(country) {
+      current = country;
+      show();
+      close();
+      onPick(country.code);
+    }
+
+    input.addEventListener("focus", function () {
+      input.select();
+      open("");
     });
-    select.value = selected || "";
+    input.addEventListener("click", function () { if (list.hidden) open(""); });
+    input.addEventListener("input", function () { open(input.value); });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        if (list.hidden) { open(""); return; }
+        if (!matches.length) return;
+        var step = e.key === "ArrowDown" ? 1 : -1;
+        setActive((active + step + matches.length) % matches.length);
+      } else if (e.key === "Enter") {
+        if (!list.hidden && matches[active]) { e.preventDefault(); pick(matches[active]); }
+      } else if (e.key === "Escape") {
+        if (!list.hidden) { e.preventDefault(); close(); show(); input.select(); }
+      } else if (e.key === "Tab") {
+        var typed = typedPick();
+        if (typed) pick(typed);
+      }
+    });
+    input.addEventListener("blur", function () {
+      var typed = typedPick();
+      if (typed) { pick(typed); return; }
+      close();
+      show();
+    });
+
+    show();
   }
 
   function renderTrips() {
@@ -58,16 +181,15 @@
       var entry = node.querySelector(".trip-entry");
       var exit = node.querySelector(".trip-exit");
 
-      buildCountryOptions(country, trip.country);
+      setupCountryCombo(node.querySelector(".combo"), trip.country, function (code) {
+        trips[index].country = code;
+        saveTrips();
+        update();
+      });
       entry.value = trip.entry || "";
       exit.value = trip.exit || "";
       exit.min = trip.entry || "";
 
-      country.addEventListener("change", function () {
-        trips[index].country = country.value;
-        saveTrips();
-        update();
-      });
       entry.addEventListener("change", function () {
         trips[index].entry = entry.value;
         exit.min = entry.value;
